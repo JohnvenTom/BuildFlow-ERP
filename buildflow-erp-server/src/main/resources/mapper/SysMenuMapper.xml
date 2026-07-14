@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.buildflow.erp.mapper.SysMenuMapper">
+    <select id="selectByRoleId" resultType="com.buildflow.erp.entity.SysMenu">
+        SELECT m.* FROM sys_menu m
+        INNER JOIN sys_role_menu rm ON m.id = rm.menu_id
+        WHERE rm.role_id = #{roleId} AND m.is_deleted = 0
+        ORDER BY m.sort
+    </select>
+</mapper>
