@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.SalesOrderDTO;
 import com.buildflow.erp.entity.SalesOrder;
 import com.buildflow.erp.service.SalesOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -31,6 +32,7 @@ public class SalesOrderController {
      * @param status        单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页销售订单列表
      */
+    @PreAuthorize("@ps.hasPermission('sales:order:list')")
     @GetMapping("/page")
     public R<PageResult<SalesOrder>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -48,6 +50,7 @@ public class SalesOrderController {
      * @param id 销售订单ID
      * @return 销售订单主表对象（含明细列表）
      */
+    @PreAuthorize("@ps.hasPermission('sales:order:list')")
     @GetMapping("/{id}")
     public R<SalesOrder> detail(@PathVariable Long id) {
         return salesOrderService.detail(id);
@@ -60,6 +63,7 @@ public class SalesOrderController {
      * @param dto 销售订单请求DTO，包含order（销售订单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:order:add')")
     @PostMapping
     public R<Void> add(@RequestBody SalesOrderDTO dto) {
         return salesOrderService.add(dto.getOrder(), dto.getItems());
@@ -73,6 +77,7 @@ public class SalesOrderController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:order:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return salesOrderService.audit(id, auditBy);
@@ -85,6 +90,7 @@ public class SalesOrderController {
      * @param id 销售订单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:order:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return salesOrderService.voidOrder(id);

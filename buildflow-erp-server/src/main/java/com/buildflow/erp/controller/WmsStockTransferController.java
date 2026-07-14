@@ -7,6 +7,7 @@ import com.buildflow.erp.entity.WmsStockTransferItem;
 import com.buildflow.erp.service.WmsStockTransferService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class WmsStockTransferController {
      * @param status      单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页调拨单列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:transfer:list')")
     @GetMapping("/page")
     public R<PageResult<WmsStockTransfer>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -48,6 +50,7 @@ public class WmsStockTransferController {
      * @param request 调拨单请求体，包含transfer（调拨单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:transfer:add')")
     @PostMapping
     public R<Void> add(@RequestBody TransferRequest request) {
         return wmsStockTransferService.add(request.getTransfer(), request.getItems());
@@ -61,6 +64,7 @@ public class WmsStockTransferController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:transfer:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return wmsStockTransferService.audit(id, auditBy);
@@ -73,6 +77,7 @@ public class WmsStockTransferController {
      * @param id 调拨单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:transfer:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return wmsStockTransferService.voidOrder(id);

@@ -75,16 +75,16 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES
 (5, 40), (5, 41), (5, 42), (5, 43), (5, 44), (5, 45);
 
 -- ================================================
--- 2. 用户数据（密码均为 123456，经MD5Util加密）
+-- 2. 用户数据（密码均为 123456，BCrypt加密）
 -- ================================================
 
 INSERT INTO sys_user (id, username, password, real_name, phone, role_id, status) VALUES
-(1, 'admin', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '系统管理员', '13800000001', 1, 1),
-(2, 'sales01', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '张三', '13800000002', 2, 1),
-(3, 'sales02', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '李四', '13800000003', 2, 1),
-(4, 'warehouse01', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '王五', '13800000004', 3, 1),
-(5, 'finance01', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '赵六', '13800000005', 4, 1),
-(6, 'viewer01', 'ed2fc668be275bc5d7f1d50a0efb3b7c', '孙七', '13800000006', 5, 1);
+(1, 'admin', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '系统管理员', '13800000001', 1, 1),
+(2, 'sales01', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '张三', '13800000002', 2, 1),
+(3, 'sales02', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '李四', '13800000003', 2, 1),
+(4, 'warehouse01', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '王五', '13800000004', 3, 1),
+(5, 'finance01', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '赵六', '13800000005', 4, 1),
+(6, 'viewer01', '$2b$10$HgsS2PV9ccqHHraSq.z5geprgap6dbnwhMsjdKcfmZG28Is3grAg2', '孙七', '13800000006', 5, 1);
 
 -- ================================================
 -- 3. 仓库数据

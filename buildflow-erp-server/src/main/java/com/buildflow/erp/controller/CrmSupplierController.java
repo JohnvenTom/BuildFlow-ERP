@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.CrmSupplier;
 import com.buildflow.erp.service.CrmSupplierService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class CrmSupplierController {
      * @param cooperationStatus  合作状态（0-正常 1-暂停 2-终止），可为空
      * @return 分页结果，包含总记录数和当前页供应商列表
      */
+    @PreAuthorize("@ps.hasPermission('crm:supplier:list')")
     @GetMapping("/page")
     public R<PageResult<CrmSupplier>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -48,6 +50,7 @@ public class CrmSupplierController {
      * @param supplier 供应商实体对象，需包含name、mainCategory、contact等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:supplier:add')")
     @PostMapping
     public R<Void> add(@RequestBody CrmSupplier supplier) {
         return crmSupplierService.add(supplier);
@@ -59,6 +62,7 @@ public class CrmSupplierController {
      * @param supplier 供应商实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:supplier:edit')")
     @PutMapping
     public R<Void> update(@RequestBody CrmSupplier supplier) {
         return crmSupplierService.update(supplier);
@@ -71,6 +75,7 @@ public class CrmSupplierController {
      * @param id 供应商ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:supplier:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return crmSupplierService.delete(id);
@@ -82,6 +87,7 @@ public class CrmSupplierController {
      *
      * @return 全部供应商列表
      */
+    @PreAuthorize("@ps.hasPermission('crm:supplier:list')")
     @GetMapping("/list")
     public R<List<CrmSupplier>> listAll() {
         return crmSupplierService.listAll();

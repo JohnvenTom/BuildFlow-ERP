@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.WmsInventory;
 import com.buildflow.erp.service.WmsInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -29,6 +30,7 @@ public class WmsInventoryController {
      * @param batchNo     批次号（模糊查询），可为空
      * @return 分页结果，包含总记录数和当前页库存明细列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:inventory:list')")
     @GetMapping("/page")
     public R<PageResult<WmsInventory>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,

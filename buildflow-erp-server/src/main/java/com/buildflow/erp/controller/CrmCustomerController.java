@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.CrmCustomer;
 import com.buildflow.erp.service.CrmCustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class CrmCustomerController {
      * @param debtStatus    欠款状态（overdue-逾期/normal-正常），可为空
      * @return 分页结果，包含总记录数和当前页客户列表
      */
+    @PreAuthorize("@ps.hasPermission('crm:customer:list')")
     @GetMapping("/page")
     public R<PageResult<CrmCustomer>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -50,6 +52,7 @@ public class CrmCustomerController {
      * @param customer 客户实体对象，需包含name、type、contact等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:customer:add')")
     @PostMapping
     public R<Void> add(@RequestBody CrmCustomer customer) {
         return crmCustomerService.add(customer);
@@ -61,6 +64,7 @@ public class CrmCustomerController {
      * @param customer 客户实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:customer:edit')")
     @PutMapping
     public R<Void> update(@RequestBody CrmCustomer customer) {
         return crmCustomerService.update(customer);
@@ -73,6 +77,7 @@ public class CrmCustomerController {
      * @param id 客户ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:customer:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return crmCustomerService.delete(id);
@@ -84,6 +89,7 @@ public class CrmCustomerController {
      *
      * @return 全部客户列表
      */
+    @PreAuthorize("@ps.hasPermission('crm:customer:list')")
     @GetMapping("/list")
     public R<List<CrmCustomer>> listAll() {
         return crmCustomerService.listAll();

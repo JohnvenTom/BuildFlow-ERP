@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.CrmFollowRecord;
 import com.buildflow.erp.service.CrmFollowRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -31,6 +32,7 @@ public class CrmFollowRecordController {
      * @param endTime       结束时间（yyyy-MM-dd HH:mm:ss），可为空
      * @return 分页结果，包含总记录数和当前页跟进记录列表
      */
+    @PreAuthorize("@ps.hasPermission('crm:follow:list')")
     @GetMapping("/page")
     public R<PageResult<CrmFollowRecord>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -50,6 +52,7 @@ public class CrmFollowRecordController {
      * @param record 跟进记录实体对象，需包含customerId、followType、content等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:follow:add')")
     @PostMapping
     public R<Void> add(@RequestBody CrmFollowRecord record) {
         return crmFollowRecordService.add(record);
@@ -61,6 +64,7 @@ public class CrmFollowRecordController {
      * @param record 跟进记录实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:follow:edit')")
     @PutMapping
     public R<Void> update(@RequestBody CrmFollowRecord record) {
         return crmFollowRecordService.update(record);
@@ -72,6 +76,7 @@ public class CrmFollowRecordController {
      * @param id 跟进记录ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('crm:follow:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return crmFollowRecordService.delete(id);

@@ -3,6 +3,7 @@ package com.buildflow.erp.controller;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.service.SalesCommissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class SalesCommissionController {
      * @param endTime   查询结束时间（格式：yyyy-MM-dd HH:mm:ss），可为空
      * @return 业务员提成汇总列表，每个元素为Map，包含salespersonId、salespersonName、orderCount、totalCommission字段
      */
+    @PreAuthorize("@ps.hasPermission('sales:commission:list')")
     @GetMapping("/report")
     public R<List<Map<String, Object>>> report(
             @RequestParam(required = false) String startTime,

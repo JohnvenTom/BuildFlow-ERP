@@ -114,7 +114,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             LambdaUpdateWrapper<CrmCustomer> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(CrmCustomer::getId, id).set(CrmCustomer::getStatus, 1);
             crmCustomerMapper.update(null, updateWrapper);
-            return R.ok("客户存在业务单据，已作废处理");
+            return R.ok("客户存在业务单据，已作废处理", null);
         }
         // 无业务单据，执行逻辑删除（由@TableLogic自动处理）
         crmCustomerMapper.deleteById(id);

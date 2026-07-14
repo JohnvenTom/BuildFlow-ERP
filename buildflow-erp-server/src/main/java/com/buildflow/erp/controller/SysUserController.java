@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ public class SysUserController {
      * @param status   账号状态（0-正常 1-禁用），可为空
      * @return 分页结果，包含总记录数和当前页用户列表
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:list')")
     @GetMapping("/page")
     public R<PageResult<SysUser>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -46,6 +48,7 @@ public class SysUserController {
      * @param user 用户实体对象，需包含username、realName、phone、roleId等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:add')")
     @PostMapping
     public R<Void> add(@RequestBody SysUser user) {
         return sysUserService.add(user);
@@ -58,6 +61,7 @@ public class SysUserController {
      * @param user 用户实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:edit')")
     @PutMapping
     public R<Void> update(@RequestBody SysUser user) {
         return sysUserService.update(user);
@@ -69,6 +73,7 @@ public class SysUserController {
      * @param id 用户ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return sysUserService.delete(id);
@@ -81,6 +86,7 @@ public class SysUserController {
      * @param id 用户ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:edit')")
     @PutMapping("/{id}/reset-password")
     public R<Void> resetPassword(@PathVariable Long id) {
         return sysUserService.resetPassword(id);
@@ -95,6 +101,7 @@ public class SysUserController {
      * @param request HTTP请求对象，用于获取当前登录用户ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:user:edit')")
     @PutMapping("/{id}/status")
     public R<Void> updateStatus(@PathVariable Long id, @RequestParam Integer status, HttpServletRequest request) {
         return sysUserService.updateStatus(id, status);

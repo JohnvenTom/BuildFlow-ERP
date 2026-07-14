@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.WmsProduct;
 import com.buildflow.erp.service.WmsProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class WmsProductController {
      * @param category  商品分类，可为空
      * @return 分页结果，包含总记录数和当前页商品列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:product:list')")
     @GetMapping("/page")
     public R<PageResult<WmsProduct>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -46,6 +48,7 @@ public class WmsProductController {
      * @param product 商品实体对象，需包含name、category等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:product:add')")
     @PostMapping
     public R<Void> add(@RequestBody WmsProduct product) {
         return wmsProductService.add(product);
@@ -57,6 +60,7 @@ public class WmsProductController {
      * @param product 商品实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:product:edit')")
     @PutMapping
     public R<Void> update(@RequestBody WmsProduct product) {
         return wmsProductService.update(product);
@@ -69,6 +73,7 @@ public class WmsProductController {
      * @param id 商品ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:product:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return wmsProductService.delete(id);
@@ -80,6 +85,7 @@ public class WmsProductController {
      *
      * @return 全部商品列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:product:list')")
     @GetMapping("/list")
     public R<List<WmsProduct>> listAll() {
         return wmsProductService.listAll();

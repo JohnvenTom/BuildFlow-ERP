@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.FinPaymentReceiveDTO;
 import com.buildflow.erp.entity.FinPaymentReceive;
 import com.buildflow.erp.service.FinPaymentReceiveService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ public class FinPaymentReceiveController {
      * @param status     单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页回款单列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:receive:list')")
     @GetMapping("/page")
     public R<PageResult<FinPaymentReceive>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -47,6 +49,7 @@ public class FinPaymentReceiveController {
      * @param dto 回款单请求DTO，包含回款单主表和核销明细列表
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:receive:add')")
     @PostMapping
     public R<Void> add(@RequestBody FinPaymentReceiveDTO dto) {
         return finPaymentReceiveService.add(dto.getReceive(), dto.getItems());
@@ -60,6 +63,7 @@ public class FinPaymentReceiveController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:receive:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return finPaymentReceiveService.audit(id, auditBy);
@@ -72,6 +76,7 @@ public class FinPaymentReceiveController {
      * @param id 回款单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:receive:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return finPaymentReceiveService.voidOrder(id);

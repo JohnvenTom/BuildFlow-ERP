@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.WmsWarehouse;
 import com.buildflow.erp.service.WmsWarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class WmsWarehouseController {
      * @param type      仓库类型，可为空
      * @return 分页结果，包含总记录数和当前页仓库列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:warehouse:list')")
     @GetMapping("/page")
     public R<PageResult<WmsWarehouse>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -46,6 +48,7 @@ public class WmsWarehouseController {
      * @param warehouse 仓库实体对象，需包含name、type等字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:warehouse:add')")
     @PostMapping
     public R<Void> add(@RequestBody WmsWarehouse warehouse) {
         return wmsWarehouseService.add(warehouse);
@@ -57,6 +60,7 @@ public class WmsWarehouseController {
      * @param warehouse 仓库实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:warehouse:edit')")
     @PutMapping
     public R<Void> update(@RequestBody WmsWarehouse warehouse) {
         return wmsWarehouseService.update(warehouse);
@@ -69,6 +73,7 @@ public class WmsWarehouseController {
      * @param id 仓库ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:warehouse:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return wmsWarehouseService.delete(id);
@@ -80,6 +85,7 @@ public class WmsWarehouseController {
      *
      * @return 全部仓库列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:warehouse:list')")
     @GetMapping("/list")
     public R<List<WmsWarehouse>> listAll() {
         return wmsWarehouseService.listAll();

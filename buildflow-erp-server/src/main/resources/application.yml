@@ -6,9 +6,9 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/buildflow_erp?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:buildflow_erp}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
@@ -26,15 +26,29 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# JWT配置
+# JWT配置（密钥从环境变量读取，提供开发默认值）
 jwt:
-  secret: BuildFlowErpSecretKey2026ForJwtTokenGeneration
-  expiration: 86400000
+  secret: ${JWT_SECRET:BuildFlowErpSecretKey2026ForJwtTokenGeneration}
+  expiration: ${JWT_EXPIRATION:86400000}
 
-# Knife4j文档配置
+# 运行环境（dev/test/prod）
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+# Knife4j文档配置（生产环境关闭）
 knife4j:
-  enable: true
+  enable: ${KNIFE4J_ENABLE:true}
+  production: ${KNIFE4J_PRODUCTION:false}
+
+# 接口签名密钥
+api:
+  sign:
+    secret: ${API_SIGN_SECRET:BuildFlowApiSignSecret2026}
+    timeout: 300000
 
 logging:
   level:
-    com.buildflow.erp: debug
+    com.buildflow.erp: ${LOG_LEVEL:debug}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"

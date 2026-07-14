@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.DeliveryOrderDTO;
 import com.buildflow.erp.entity.DeliveryOrder;
 import com.buildflow.erp.service.DeliveryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ public class DeliveryOrderController {
      * @param status     单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页出库单列表
      */
+    @PreAuthorize("@ps.hasPermission('sales:delivery:list')")
     @GetMapping("/page")
     public R<PageResult<DeliveryOrder>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -47,6 +49,7 @@ public class DeliveryOrderController {
      * @param dto 出库单请求DTO，包含delivery（出库单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:delivery:add')")
     @PostMapping
     public R<Void> add(@RequestBody DeliveryOrderDTO dto) {
         return deliveryOrderService.add(dto.getDelivery(), dto.getItems());
@@ -60,6 +63,7 @@ public class DeliveryOrderController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:delivery:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return deliveryOrderService.audit(id, auditBy);
@@ -72,6 +76,7 @@ public class DeliveryOrderController {
      * @param id 出库单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sales:delivery:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return deliveryOrderService.voidOrder(id);

@@ -2,7 +2,7 @@ package com.buildflow.erp.controller;
 
 import com.buildflow.erp.common.constants.Constants;
 import com.buildflow.erp.common.result.R;
-import com.buildflow.erp.common.utils.MD5Util;
+import com.buildflow.erp.common.utils.PasswordUtil;
 import com.buildflow.erp.dto.LoginRequest;
 import com.buildflow.erp.dto.LoginResponse;
 import com.buildflow.erp.dto.MenuVO;
@@ -74,7 +74,7 @@ public class AuthController {
         }
 
         // 4. 验证密码
-        if (!MD5Util.verify(loginRequest.getPassword(), user.getPassword())) {
+        if (!PasswordUtil.verify(loginRequest.getPassword(), user.getPassword())) {
             // 密码错误，累加失败次数
             int failCount = (user.getLoginFailCount() == null ? 0 : user.getLoginFailCount()) + 1;
             user.setLoginFailCount(failCount);

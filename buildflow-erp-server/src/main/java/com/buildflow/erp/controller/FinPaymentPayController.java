@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.FinPaymentPayDTO;
 import com.buildflow.erp.entity.FinPaymentPay;
 import com.buildflow.erp.service.FinPaymentPayService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ public class FinPaymentPayController {
      * @param status      单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页付款单列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:pay:list')")
     @GetMapping("/page")
     public R<PageResult<FinPaymentPay>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -47,6 +49,7 @@ public class FinPaymentPayController {
      * @param dto 付款单请求DTO，包含付款单主表和核销明细列表
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:pay:add')")
     @PostMapping
     public R<Void> add(@RequestBody FinPaymentPayDTO dto) {
         return finPaymentPayService.add(dto.getPay(), dto.getItems());
@@ -60,6 +63,7 @@ public class FinPaymentPayController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:pay:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return finPaymentPayService.audit(id, auditBy);
@@ -72,6 +76,7 @@ public class FinPaymentPayController {
      * @param id 付款单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('fin:pay:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return finPaymentPayService.voidOrder(id);

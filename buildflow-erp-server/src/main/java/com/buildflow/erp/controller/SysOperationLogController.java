@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.SysOperationLog;
 import com.buildflow.erp.service.SysOperationLogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +33,7 @@ public class SysOperationLogController {
      * @param endTime   操作结束时间，格式yyyy-MM-dd，可为空
      * @return 分页结果，包含总记录数和当前页日志列表
      */
+    @PreAuthorize("@ps.hasPermission('sys:log:list')")
     @GetMapping("/page")
     public R<PageResult<SysOperationLog>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,

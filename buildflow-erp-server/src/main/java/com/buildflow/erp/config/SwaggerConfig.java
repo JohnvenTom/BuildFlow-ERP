@@ -59,8 +59,8 @@ public class SwaggerConfig {
      * 配置安全方案（JWT Bearer Token）
      * @return 安全方案列表
      */
-    private List<ApiKey> securitySchemes() {
-        List<ApiKey> schemes = new ArrayList<>();
+    private List<springfox.documentation.service.SecurityScheme> securitySchemes() {
+        List<springfox.documentation.service.SecurityScheme> schemes = new ArrayList<>();
         schemes.add(new ApiKey("Authorization", "Authorization", "header"));
         return schemes;
     }

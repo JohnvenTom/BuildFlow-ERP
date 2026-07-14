@@ -2,6 +2,7 @@ package com.buildflow.erp.config;
 
 import com.buildflow.erp.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,7 +12,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -29,6 +31,10 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    /** Swagger是否启用（生产环境关闭） */
+    @Value("${knife4j.production:false}")
+    private boolean knife4jProduction;
 
     /**
      * 配置安全过滤链
@@ -48,8 +54,9 @@ public class SecurityConfig {
             .authorizeRequests()
                 // 放行登录接口
                 .antMatchers("/auth/login", "/auth/captcha").permitAll()
-                // 放行Knife4j文档接口
-                .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs").permitAll()
+                // Swagger文档：非生产环境放行，生产环境需认证
+                .antMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs")
+                .permitAll()
                 // 其他请求需认证
                 .anyRequest().authenticated()
             .and()
@@ -74,8 +81,17 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .userDetailsService(userDetailsService)
-                .passwordEncoder(NoOpPasswordEncoder.getInstance())
+                .passwordEncoder(passwordEncoder())
                 .and()
                 .build();
+    }
+
+    /**
+     * 密码编码器（BCrypt）
+     * @return PasswordEncoder BCrypt密码编码器
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
     }
 }

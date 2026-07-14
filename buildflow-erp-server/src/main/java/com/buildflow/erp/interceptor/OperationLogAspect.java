@@ -1,5 +1,6 @@
 package com.buildflow.erp.interceptor;
 
+import com.buildflow.erp.common.utils.LogMaskUtil;
 import com.buildflow.erp.entity.SysOperationLog;
 import com.buildflow.erp.service.SysOperationLogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,6 +109,8 @@ public class OperationLogAspect {
                     if (params.length() > 2000) {
                         params = params.substring(0, 2000);
                     }
+                    // 敏感信息脱敏处理
+                    params = LogMaskUtil.maskJson(params);
                     log.setParams(params);
                 } catch (Exception e) {
                     log.setParams("参数序列化失败");

@@ -7,6 +7,7 @@ import com.buildflow.erp.entity.WmsStockCheckItem;
 import com.buildflow.erp.service.WmsStockCheckService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class WmsStockCheckController {
      * @param status    单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页盘点单列表
      */
+    @PreAuthorize("@ps.hasPermission('wms:check:list')")
     @GetMapping("/page")
     public R<PageResult<WmsStockCheck>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -48,6 +50,7 @@ public class WmsStockCheckController {
      * @param request 盘点单请求体，包含check（盘点单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:check:add')")
     @PostMapping
     public R<Void> add(@RequestBody CheckRequest request) {
         return wmsStockCheckService.add(request.getCheck(), request.getItems());
@@ -61,6 +64,7 @@ public class WmsStockCheckController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:check:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return wmsStockCheckService.audit(id, auditBy);
@@ -73,6 +77,7 @@ public class WmsStockCheckController {
      * @param id 盘点单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('wms:check:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return wmsStockCheckService.voidOrder(id);

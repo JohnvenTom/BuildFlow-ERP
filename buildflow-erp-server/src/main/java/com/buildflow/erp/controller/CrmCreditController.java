@@ -4,6 +4,7 @@ import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.service.CrmCreditService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -29,6 +30,7 @@ public class CrmCreditController {
      * @param debtStatus    欠款状态（overdue-逾期/normal-正常），可为空
      * @return 分页结果，每条记录为客户信用信息Map
      */
+    @PreAuthorize("@ps.hasPermission('crm:credit:list')")
     @GetMapping("/page")
     public R<PageResult<Map<String, Object>>> creditPage(
             @RequestParam(defaultValue = "1") Integer pageNum,

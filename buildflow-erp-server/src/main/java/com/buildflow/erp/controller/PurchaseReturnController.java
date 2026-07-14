@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.PurchaseReturnDTO;
 import com.buildflow.erp.entity.PurchaseReturn;
 import com.buildflow.erp.service.PurchaseReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ public class PurchaseReturnController {
      * @param status      单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页退货单列表
      */
+    @PreAuthorize("@ps.hasPermission('purchase:return:list')")
     @GetMapping("/page")
     public R<PageResult<PurchaseReturn>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -47,6 +49,7 @@ public class PurchaseReturnController {
      * @param dto 退货单请求DTO，包含returnOrder（退货单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:return:add')")
     @PostMapping
     public R<Void> add(@RequestBody PurchaseReturnDTO dto) {
         return purchaseReturnService.add(dto.getReturnOrder(), dto.getItems());
@@ -60,6 +63,7 @@ public class PurchaseReturnController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:return:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return purchaseReturnService.audit(id, auditBy);
@@ -72,6 +76,7 @@ public class PurchaseReturnController {
      * @param id 退货单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:return:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return purchaseReturnService.voidOrder(id);

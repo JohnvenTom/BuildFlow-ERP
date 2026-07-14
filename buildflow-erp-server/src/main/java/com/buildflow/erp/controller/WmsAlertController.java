@@ -3,6 +3,7 @@ package com.buildflow.erp.controller;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.service.WmsAlertService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,7 @@ public class WmsAlertController {
      *
      * @return 预警列表，每条记录包含商品ID、商品名称、分类、当前总库存、最低库存等字段
      */
+    @PreAuthorize("@ps.hasPermission('wms:alert:list')")
     @GetMapping("/lowStock")
     public R<List<Map<String, Object>>> lowStockAlert() {
         return wmsAlertService.lowStockAlert();
@@ -38,6 +40,7 @@ public class WmsAlertController {
      *
      * @return 预警列表，每条记录包含商品ID、商品名称、仓库ID、仓库名称、批次号、库存数量、最后更新时间等字段
      */
+    @PreAuthorize("@ps.hasPermission('wms:alert:list')")
     @GetMapping("/dormant")
     public R<List<Map<String, Object>>> dormantStockAlert() {
         return wmsAlertService.dormantStockAlert();

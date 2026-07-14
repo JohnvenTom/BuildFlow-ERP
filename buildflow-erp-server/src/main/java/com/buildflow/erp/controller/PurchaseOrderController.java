@@ -6,6 +6,7 @@ import com.buildflow.erp.dto.PurchaseOrderDTO;
 import com.buildflow.erp.entity.PurchaseOrder;
 import com.buildflow.erp.service.PurchaseOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,6 +31,7 @@ public class PurchaseOrderController {
      * @param status      单据状态（0-草稿 1-已审核 2-已作废），可为空
      * @return 分页结果，包含总记录数和当前页采购订单列表
      */
+    @PreAuthorize("@ps.hasPermission('purchase:order:list')")
     @GetMapping("/page")
     public R<PageResult<PurchaseOrder>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -47,6 +49,7 @@ public class PurchaseOrderController {
      * @param dto 采购订单请求DTO，包含order（采购订单主表）和items（明细列表）
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:order:add')")
     @PostMapping
     public R<Void> add(@RequestBody PurchaseOrderDTO dto) {
         return purchaseOrderService.add(dto.getOrder(), dto.getItems());
@@ -60,6 +63,7 @@ public class PurchaseOrderController {
      * @param auditBy 审核人ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:order:audit')")
     @PutMapping("/audit/{id}")
     public R<Void> audit(@PathVariable Long id, @RequestParam Long auditBy) {
         return purchaseOrderService.audit(id, auditBy);
@@ -72,6 +76,7 @@ public class PurchaseOrderController {
      * @param id 采购订单ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('purchase:order:void')")
     @PutMapping("/void/{id}")
     public R<Void> voidOrder(@PathVariable Long id) {
         return purchaseOrderService.voidOrder(id);

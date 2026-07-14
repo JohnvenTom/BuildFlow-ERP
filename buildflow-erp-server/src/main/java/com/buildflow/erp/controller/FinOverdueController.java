@@ -3,6 +3,7 @@ package com.buildflow.erp.controller;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.service.FinOverdueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,7 @@ public class FinOverdueController {
      *
      * @return 逾期明细列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:overdue:list')")
     @GetMapping("/list")
     public R<List<Map<String, Object>>> list() {
         return finOverdueService.overdueList();
@@ -38,6 +40,7 @@ public class FinOverdueController {
      *
      * @return 汇总列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:overdue:list')")
     @GetMapping("/summary")
     public R<List<Map<String, Object>>> summary() {
         return finOverdueService.overdueCustomerSummary();

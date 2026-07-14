@@ -5,6 +5,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.FinReceivable;
 import com.buildflow.erp.service.FinReceivableService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +35,7 @@ public class FinReceivableController {
      * @param status     状态（0-正常 1-逾期 2-已结清），可为空
      * @return 分页结果，包含总记录数和当前页应收台账列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:receivable:list')")
     @GetMapping("/page")
     public R<PageResult<FinReceivable>> page(
             @RequestParam(defaultValue = "1") Integer pageNum,
@@ -49,6 +51,7 @@ public class FinReceivableController {
      *
      * @return 汇总列表
      */
+    @PreAuthorize("@ps.hasPermission('fin:receivable:list')")
     @GetMapping("/summary")
     public R<List<Map<String, Object>>> summary() {
         return finReceivableService.summaryByCustomer();

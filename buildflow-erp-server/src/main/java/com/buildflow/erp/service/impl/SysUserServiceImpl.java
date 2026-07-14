@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.buildflow.erp.common.constants.Constants;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
-import com.buildflow.erp.common.utils.MD5Util;
+import com.buildflow.erp.common.utils.PasswordUtil;
 import com.buildflow.erp.entity.SysOperationLog;
 import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.SysUserMapper;
@@ -66,7 +66,7 @@ public class SysUserServiceImpl implements SysUserService {
             return R.fail("用户名已存在");
         }
         // 设置默认密码123456并加密
-        user.setPassword(MD5Util.encrypt("123456"));
+        user.setPassword(PasswordUtil.encrypt("123456"));
         user.setStatus(Constants.USER_STATUS_NORMAL);
         sysUserMapper.insert(user);
 
@@ -135,7 +135,7 @@ public class SysUserServiceImpl implements SysUserService {
         }
         LambdaUpdateWrapper<SysUser> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SysUser::getId, id)
-                .set(SysUser::getPassword, MD5Util.encrypt("123456"))
+                .set(SysUser::getPassword, PasswordUtil.encrypt("123456"))
                 .set(SysUser::getLoginFailCount, 0)
                 .set(SysUser::getLockedUntil, null);
         sysUserMapper.update(null, wrapper);

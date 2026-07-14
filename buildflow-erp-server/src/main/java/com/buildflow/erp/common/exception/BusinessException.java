@@ -32,4 +32,13 @@ public class BusinessException extends RuntimeException {
         super(message);
         this.code = code;
     }
+
+    /**
+     * 根据错误码枚举构造业务异常
+     * @param errorCode 错误码枚举
+     */
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.code = errorCode.getCode();
+    }
 }

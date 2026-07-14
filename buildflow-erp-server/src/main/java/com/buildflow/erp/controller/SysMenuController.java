@@ -4,6 +4,7 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.SysMenu;
 import com.buildflow.erp.service.SysMenuService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,7 @@ public class SysMenuController {
      *
      * @return 树形结构的菜单列表，顶级菜单的parentId为0
      */
+    @PreAuthorize("@ps.hasPermission('sys:menu:list')")
     @GetMapping("/tree")
     public R<List<SysMenu>> tree() {
         return sysMenuService.tree();

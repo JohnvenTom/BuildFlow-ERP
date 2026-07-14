@@ -6,6 +6,7 @@ import com.buildflow.erp.entity.SysRole;
 import com.buildflow.erp.service.SysMenuService;
 import com.buildflow.erp.service.SysRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class SysRoleController {
      *
      * @return 角色列表
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:list')")
     @GetMapping("/list")
     public R<List<SysRole>> list() {
         return sysRoleService.list();
@@ -42,6 +44,7 @@ public class SysRoleController {
      * @param role 角色实体对象，需包含roleName、roleCode字段
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:add')")
     @PostMapping
     public R<Void> add(@RequestBody SysRole role) {
         return sysRoleService.add(role);
@@ -54,6 +57,7 @@ public class SysRoleController {
      * @param role 角色实体对象，id字段必填
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:edit')")
     @PutMapping
     public R<Void> update(@RequestBody SysRole role) {
         return sysRoleService.update(role);
@@ -66,6 +70,7 @@ public class SysRoleController {
      * @param id 角色ID
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:delete')")
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         return sysRoleService.delete(id);
@@ -78,6 +83,7 @@ public class SysRoleController {
      * @param roleId 角色ID
      * @return 该角色关联的菜单列表
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:list')")
     @GetMapping("/{roleId}/menus")
     public R<List<SysMenu>> getRoleMenus(@PathVariable Long roleId) {
         return sysMenuService.getByRoleId(roleId);
@@ -91,6 +97,7 @@ public class SysRoleController {
      * @param menuIds 菜单ID列表
      * @return 操作结果
      */
+    @PreAuthorize("@ps.hasPermission('sys:role:add')")
     @PostMapping("/{roleId}/menus")
     public R<Void> assignRoleMenus(@PathVariable Long roleId, @RequestBody List<Long> menuIds) {
         return sysMenuService.assignMenus(roleId, menuIds);
