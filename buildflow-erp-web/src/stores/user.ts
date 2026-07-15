@@ -10,8 +10,11 @@ import router from '@/router'
  * @description 管理用户token、用户信息、菜单列表，提供登录/登出/获取用户信息等操作
  */
 export const useUserStore = defineStore('user', () => {
+  /** Token 在 localStorage 中的存储键名（从环境变量读取，默认 buildflow_token） */
+  const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || 'buildflow_token'
+
   /** 访问令牌 */
-  const token = ref<string>(localStorage.getItem('token') || '')
+  const token = ref<string>(localStorage.getItem(TOKEN_KEY) || '')
   /** 用户信息 */
   const userInfo = ref<UserInfo | null>(null)
   /** 菜单列表 */
@@ -24,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
   async function login(loginData: LoginRequest) {
     const res = await loginApi(loginData)
     token.value = res.data.token
-    localStorage.setItem('token', res.data.token)
+    localStorage.setItem(TOKEN_KEY, res.data.token)
   }
 
   /**
@@ -58,7 +61,7 @@ export const useUserStore = defineStore('user', () => {
       token.value = ''
       userInfo.value = null
       menuList.value = []
-      localStorage.removeItem('token')
+      localStorage.removeItem(TOKEN_KEY)
       router.push('/login')
     }
   }

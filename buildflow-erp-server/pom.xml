@@ -23,6 +23,7 @@
         <jjwt.version>0.9.1</jjwt.version>
         <poi.version>5.2.5</poi.version>
         <knife4j.version>3.0.3</knife4j.version>
+        <spring-dotenv.version>4.0.0</spring-dotenv.version>
     </properties>
 
     <dependencies>
@@ -104,6 +105,13 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>5.8.25</version>
+        </dependency>
+
+        <!-- Spring Dotenv - 加载.env文件中的环境变量 -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>${spring-dotenv.version}</version>
         </dependency>
 
         <!-- Test -->

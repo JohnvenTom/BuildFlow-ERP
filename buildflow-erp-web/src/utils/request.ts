@@ -3,9 +3,13 @@ import { ElMessage } from 'element-plus'
 import router from '@/router'
 import type { R } from '@/types'
 
+/** Token 在 localStorage 中的存储键名（从环境变量读取，默认 buildflow_token） */
+const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || 'buildflow_token'
+
 /** 创建Axios实例 */
 const service: AxiosInstance = axios.create({
-  baseURL: '/api',
+  // 从环境变量读取 API 基础路径，默认 /api
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 15000
 })
 
@@ -15,7 +19,7 @@ const service: AxiosInstance = axios.create({
  */
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem(TOKEN_KEY)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -36,7 +40,7 @@ service.interceptors.response.use(
     if (res.code !== 200) {
       ElMessage.error(res.message || '请求失败')
       if (res.code === 401) {
-        localStorage.removeItem('token')
+        localStorage.removeItem(TOKEN_KEY)
         router.push('/login')
       }
       return Promise.reject(new Error(res.message || '请求失败'))
@@ -47,7 +51,7 @@ service.interceptors.response.use(
     if (error.response) {
       const { status } = error.response
       if (status === 401) {
-        localStorage.removeItem('token')
+        localStorage.removeItem(TOKEN_KEY)
         router.push('/login')
         ElMessage.error('登录已过期，请重新登录')
       } else if (status === 403) {
