@@ -23,8 +23,8 @@
       </template>
 
       <el-table :data="filteredTableData" v-loading="loading" border stripe>
-        <el-table-column prop="name" label="角色名称" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="code" label="角色编码" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="roleName" label="角色名称" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="roleCode" label="角色编码" min-width="140" show-overflow-tooltip />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" width="180" show-overflow-tooltip />
         <el-table-column label="操作" width="220" fixed="right">
@@ -45,11 +45,11 @@
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="90px">
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="form.roleName" placeholder="请输入角色名称" />
         </el-form-item>
-        <el-form-item label="角色编码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入角色编码" />
+        <el-form-item label="角色编码" prop="roleCode">
+          <el-input v-model="form.roleCode" placeholder="请输入角色编码" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
@@ -71,7 +71,7 @@
       <el-tree
         ref="menuTreeRef"
         :data="menuTreeData"
-        :props="{ label: 'name', children: 'children' }"
+        :props="{ label: 'menuName', children: 'children' }"
         show-checkbox
         node-key="id"
         :default-checked-keys="checkedMenuIds"
@@ -106,7 +106,7 @@ const filteredTableData = computed(() => {
   if (!searchForm.keyword) return tableData.value
   const kw = searchForm.keyword.toLowerCase()
   return tableData.value.filter(
-    (item) => item.name?.toLowerCase().includes(kw) || item.code?.toLowerCase().includes(kw)
+    (item) => item.roleName?.toLowerCase().includes(kw) || item.roleCode?.toLowerCase().includes(kw)
   )
 })
 
@@ -120,15 +120,15 @@ const formRef = ref<FormInstance>()
 /** 表单数据 */
 const form = reactive({
   id: undefined as number | undefined,
-  name: '',
-  code: '',
+  roleName: '',
+  roleCode: '',
   description: ''
 })
 
 /** 表单校验规则 */
 const formRules = reactive<FormRules>({
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }]
+  roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+  roleCode: [{ required: true, message: '请输入角色编码', trigger: 'blur' }]
 })
 
 /** 分配菜单弹窗显示状态 */
@@ -189,8 +189,8 @@ function handleReset() {
  */
 function resetForm() {
   form.id = undefined
-  form.name = ''
-  form.code = ''
+  form.roleName = ''
+  form.roleCode = ''
   form.description = ''
 }
 
@@ -214,8 +214,8 @@ function handleEdit(row: any) {
   dialogTitle.value = '编辑角色'
   Object.assign(form, {
     id: row.id,
-    name: row.name,
-    code: row.code,
+    roleName: row.roleName,
+    roleCode: row.roleCode,
     description: row.description
   })
   dialogVisible.value = true
@@ -228,7 +228,7 @@ function handleEdit(row: any) {
  * @throws 用户取消删除时不执行操作
  */
 async function handleDelete(row: any) {
-  await ElMessageBox.confirm(`确定要删除角色「${row.name}」吗？`, '删除确认', {
+  await ElMessageBox.confirm(`确定要删除角色「${row.roleName}」吗？`, '删除确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

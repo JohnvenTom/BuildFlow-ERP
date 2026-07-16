@@ -4,7 +4,7 @@
     <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="操作模块">
-          <el-input v-model="searchForm.operation" placeholder="请输入操作模块" clearable />
+          <el-input v-model="searchForm.module" placeholder="请输入操作模块" clearable />
         </el-form-item>
         <el-form-item label="时间范围">
           <el-date-picker
@@ -31,9 +31,9 @@
       </template>
 
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="operator" label="操作用户" width="120" show-overflow-tooltip />
-        <el-table-column prop="operation" label="操作模块" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="method" label="操作类型" width="160" show-overflow-tooltip />
+        <el-table-column prop="username" label="操作用户" width="120" show-overflow-tooltip />
+        <el-table-column prop="module" label="操作模块" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="operation" label="操作类型" width="160" show-overflow-tooltip />
         <el-table-column prop="method" label="请求方法" width="200" show-overflow-tooltip />
         <el-table-column prop="params" label="请求参数" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
@@ -68,7 +68,7 @@ import { logPage } from '@/api/system'
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  operation: '',
+  module: '',
   dateRange: null as [string, string] | null
 })
 
@@ -94,7 +94,7 @@ async function loadData() {
     const params: any = {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
-      operation: searchForm.operation || undefined
+      module: searchForm.module || undefined
     }
     // 处理时间范围参数
     if (searchForm.dateRange && searchForm.dateRange.length === 2) {
@@ -123,7 +123,7 @@ function handleSearch() {
  * @description 清空搜索表单并重新加载数据
  */
 function handleReset() {
-  searchForm.operation = ''
+  searchForm.module = ''
   searchForm.dateRange = null
   handleSearch()
 }

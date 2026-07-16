@@ -2,12 +2,10 @@ package com.buildflow.erp.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.buildflow.erp.common.result.R;
-import com.buildflow.erp.entity.SysOperationLog;
 import com.buildflow.erp.entity.SysRole;
 import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.SysRoleMapper;
 import com.buildflow.erp.mapper.SysUserMapper;
-import com.buildflow.erp.service.SysOperationLogService;
 import com.buildflow.erp.service.SysRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,9 +26,6 @@ public class SysRoleServiceImpl implements SysRoleService {
 
     @Autowired
     private SysUserMapper sysUserMapper;
-
-    @Autowired
-    private SysOperationLogService sysOperationLogService;
 
     /**
      * 查询全部角色列表
@@ -62,9 +57,6 @@ public class SysRoleServiceImpl implements SysRoleService {
             return R.fail("角色编码已存在");
         }
         sysRoleMapper.insert(role);
-
-        // 记录操作日志
-        saveOperationLog("角色管理", "新增角色：" + role.getRoleName());
         return R.ok();
     }
 
@@ -84,9 +76,6 @@ public class SysRoleServiceImpl implements SysRoleService {
         // 不允许修改角色编码
         role.setRoleCode(null);
         sysRoleMapper.updateById(role);
-
-        // 记录操作日志
-        saveOperationLog("角色管理", "编辑角色：" + existing.getRoleName());
         return R.ok();
     }
 
@@ -110,23 +99,6 @@ public class SysRoleServiceImpl implements SysRoleService {
             return R.fail("该角色已分配给用户，无法删除");
         }
         sysRoleMapper.deleteById(id);
-
-        // 记录操作日志
-        saveOperationLog("角色管理", "删除角色：" + existing.getRoleName());
         return R.ok();
-    }
-
-    /**
-     * 保存操作日志的内部辅助方法
-     * 构建日志对象并异步保存
-     *
-     * @param module    操作模块名称
-     * @param operation 操作描述
-     */
-    private void saveOperationLog(String module, String operation) {
-        SysOperationLog log = new SysOperationLog();
-        log.setModule(module);
-        log.setOperation(operation);
-        sysOperationLogService.save(log);
     }
 }

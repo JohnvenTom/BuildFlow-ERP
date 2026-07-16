@@ -7,10 +7,8 @@ import com.buildflow.erp.common.constants.Constants;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.common.utils.PasswordUtil;
-import com.buildflow.erp.entity.SysOperationLog;
 import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.SysUserMapper;
-import com.buildflow.erp.service.SysOperationLogService;
 import com.buildflow.erp.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,9 +24,6 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Autowired
     private SysUserMapper sysUserMapper;
-
-    @Autowired
-    private SysOperationLogService sysOperationLogService;
 
     /**
      * 分页查询用户列表
@@ -69,9 +64,6 @@ public class SysUserServiceImpl implements SysUserService {
         user.setPassword(PasswordUtil.encrypt("123456"));
         user.setStatus(Constants.USER_STATUS_NORMAL);
         sysUserMapper.insert(user);
-
-        // 记录操作日志
-        saveOperationLog("用户管理", "新增用户：" + user.getUsername());
         return R.ok();
     }
 
@@ -92,9 +84,6 @@ public class SysUserServiceImpl implements SysUserService {
         user.setUsername(null);
         user.setPassword(null);
         sysUserMapper.updateById(user);
-
-        // 记录操作日志
-        saveOperationLog("用户管理", "编辑用户：" + existing.getUsername());
         return R.ok();
     }
 
@@ -114,9 +103,6 @@ public class SysUserServiceImpl implements SysUserService {
         // 检查用户是否有关联业务数据（可根据业务需要扩展检查逻辑）
         // 当前仅执行逻辑删除，MyBatis-Plus的@TableLogic会自动处理
         sysUserMapper.deleteById(id);
-
-        // 记录操作日志
-        saveOperationLog("用户管理", "删除用户：" + existing.getUsername());
         return R.ok();
     }
 
@@ -139,9 +125,6 @@ public class SysUserServiceImpl implements SysUserService {
                 .set(SysUser::getLoginFailCount, 0)
                 .set(SysUser::getLockedUntil, null);
         sysUserMapper.update(null, wrapper);
-
-        // 记录操作日志
-        saveOperationLog("用户管理", "重置密码：" + existing.getUsername());
         return R.ok();
     }
 
@@ -162,10 +145,6 @@ public class SysUserServiceImpl implements SysUserService {
         LambdaUpdateWrapper<SysUser> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(SysUser::getId, id).set(SysUser::getStatus, status);
         sysUserMapper.update(null, wrapper);
-
-        // 记录操作日志
-        String statusText = Constants.USER_STATUS_NORMAL.equals(status) ? "启用" : "禁用";
-        saveOperationLog("用户管理", statusText + "账号：" + existing.getUsername());
         return R.ok();
     }
 
@@ -179,19 +158,5 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public SysUser getByUsername(String username) {
         return sysUserMapper.selectByUsername(username);
-    }
-
-    /**
-     * 保存操作日志的内部辅助方法
-     * 构建日志对象并异步保存
-     *
-     * @param module    操作模块名称
-     * @param operation 操作描述
-     */
-    private void saveOperationLog(String module, String operation) {
-        SysOperationLog log = new SysOperationLog();
-        log.setModule(module);
-        log.setOperation(operation);
-        sysOperationLogService.save(log);
     }
 }
