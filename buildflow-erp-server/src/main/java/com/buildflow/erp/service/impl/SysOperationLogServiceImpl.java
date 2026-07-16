@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.SysOperationLog;
+import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.SysOperationLogMapper;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.SysOperationLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,10 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 操作日志服务实现类
@@ -25,6 +31,9 @@ public class SysOperationLogServiceImpl implements SysOperationLogService {
 
     @Autowired
     private SysOperationLogMapper sysOperationLogMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     /**
      * 分页查询操作日志
@@ -48,7 +57,37 @@ public class SysOperationLogServiceImpl implements SysOperationLogService {
                         StringUtils.hasText(endTime) ? LocalDateTime.parse(endTime + " 23:59:59", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : null)
                 .orderByDesc(SysOperationLog::getCreateTime);
         Page<SysOperationLog> result = sysOperationLogMapper.selectPage(page, wrapper);
+        // 填充操作用户名
+        fillUsername(result.getRecords());
         return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+    }
+
+    /**
+     * 填充操作用户名
+     * 批量查询用户表，将userId对应的username填充到日志记录中，
+     * 解决历史数据中username字段为空的展示问题。
+     *
+     * @param logs 操作日志列表
+     */
+    private void fillUsername(List<SysOperationLog> logs) {
+        if (logs == null || logs.isEmpty()) {
+            return;
+        }
+        Set<Long> userIds = logs.stream()
+                .map(SysOperationLog::getUserId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        if (userIds.isEmpty()) {
+            return;
+        }
+        List<SysUser> users = sysUserMapper.selectBatchIds(userIds);
+        Map<Long, String> usernameMap = users.stream()
+                .collect(Collectors.toMap(SysUser::getId, SysUser::getUsername, (a, b) -> a));
+        for (SysOperationLog log : logs) {
+            if (log.getUserId() != null && log.getUsername() == null) {
+                log.setUsername(usernameMap.get(log.getUserId()));
+            }
+        }
     }
 
     /**

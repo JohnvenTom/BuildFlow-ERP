@@ -2,6 +2,8 @@ package com.buildflow.erp.interceptor;
 
 import com.buildflow.erp.common.utils.LogMaskUtil;
 import com.buildflow.erp.entity.SysOperationLog;
+import com.buildflow.erp.entity.SysUser;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.SysOperationLogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -29,6 +31,9 @@ public class OperationLogAspect {
 
     @Autowired
     private SysOperationLogService sysOperationLogService;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -73,7 +78,7 @@ public class OperationLogAspect {
                 }
             }
 
-            // 从HttpServletRequest获取用户名
+            // 从HttpServletRequest获取用户名和IP
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
@@ -89,12 +94,23 @@ public class OperationLogAspect {
                         log.setUserId(Long.valueOf(userIdAttr.toString()));
                     }
                 }
-                String className = joinPoint.getTarget().getClass().getSimpleName();
-                log.setMethod(className + "#" + methodName);
+            }
+            String className = joinPoint.getTarget().getClass().getSimpleName();
+            log.setMethod(className + "#" + methodName);
+
+            // 如果userId不为空但username为空，从数据库查询用户名
+            if (log.getUserId() != null && log.getUsername() == null) {
+                try {
+                    SysUser user = sysUserMapper.selectById(log.getUserId());
+                    if (user != null) {
+                        log.setUsername(user.getUsername());
+                    }
+                } catch (Exception e) {
+                    // 查询失败不影响日志记录
+                }
             }
 
             // 设置操作模块（从类名提取）
-            String className = joinPoint.getTarget().getClass().getSimpleName();
             log.setModule(extractModule(className));
 
             // 设置操作描述
