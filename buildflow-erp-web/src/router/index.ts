@@ -201,6 +201,7 @@ const router = createRouter({
 /**
  * 全局路由守卫
  * 检查用户是否已登录（token是否存在），未登录则跳转登录页
+ * 已登录但未获取用户信息时，自动调用 getInfo() 获取菜单和用户信息
  */
 router.beforeEach(async (to, _from, next) => {
   const userStore = useUserStore()
@@ -210,6 +211,17 @@ router.beforeEach(async (to, _from, next) => {
     if (to.path === '/login') {
       next({ path: '/' })
     } else {
+      // 已登录但未获取用户信息/菜单时，自动获取
+      if (!userStore.userInfo) {
+        try {
+          await userStore.getInfo()
+        } catch {
+          // 获取信息失败（如token过期），清除并跳转登录
+          await userStore.logout()
+          next(`/login?redirect=${to.path}`)
+          return
+        }
+      }
       next()
     }
   } else {

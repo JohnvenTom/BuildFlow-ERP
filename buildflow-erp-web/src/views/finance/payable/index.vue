@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="payable-container">
     <!-- 汇总区域 -->
     <el-card shadow="never" class="summary-card">
@@ -167,7 +167,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

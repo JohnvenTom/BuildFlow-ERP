@@ -1,4 +1,4 @@
-import { get, post, put, del } from '@/utils/request'
+import { get, post, put } from '@/utils/request'
 
 // ==================== 客户应收台账 ====================
 

@@ -12,11 +12,13 @@ import com.buildflow.erp.entity.DeliveryOrder;
 import com.buildflow.erp.entity.DeliveryOrderItem;
 import com.buildflow.erp.entity.SalesOrder;
 import com.buildflow.erp.entity.SalesOrderItem;
+import com.buildflow.erp.entity.WmsWarehouse;
 import com.buildflow.erp.mapper.CrmCustomerMapper;
 import com.buildflow.erp.mapper.DeliveryOrderItemMapper;
 import com.buildflow.erp.mapper.DeliveryOrderMapper;
 import com.buildflow.erp.mapper.SalesOrderItemMapper;
 import com.buildflow.erp.mapper.SalesOrderMapper;
+import com.buildflow.erp.mapper.WmsWarehouseMapper;
 import com.buildflow.erp.service.DeliveryOrderService;
 import com.buildflow.erp.service.WmsInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 工地出库单服务实现类
@@ -52,6 +57,9 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     private CrmCustomerMapper crmCustomerMapper;
 
     @Autowired
+    private WmsWarehouseMapper wmsWarehouseMapper;
+
+    @Autowired
     private WmsInventoryService wmsInventoryService;
 
     /**
@@ -74,7 +82,32 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
                 .eq(StringUtils.hasText(status), DeliveryOrder::getStatus, status)
                 .orderByDesc(DeliveryOrder::getCreateTime);
         Page<DeliveryOrder> result = deliveryOrderMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<DeliveryOrder> records = result.getRecords();
+        // 批量查询销售订单号并填充到结果中
+        List<Long> orderIds = records.stream()
+                .map(DeliveryOrder::getOrderId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!orderIds.isEmpty()) {
+            List<SalesOrder> orders = salesOrderMapper.selectBatchIds(orderIds);
+            Map<Long, String> orderMap = orders.stream()
+                    .collect(Collectors.toMap(SalesOrder::getId, SalesOrder::getOrderNo));
+            records.forEach(e -> e.setSalesOrderNo(orderMap.get(e.getOrderId())));
+        }
+        // 批量查询出库仓库名称并填充到结果中
+        List<Long> warehouseIds = records.stream()
+                .map(DeliveryOrder::getWarehouseId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!warehouseIds.isEmpty()) {
+            List<WmsWarehouse> warehouses = wmsWarehouseMapper.selectBatchIds(warehouseIds);
+            Map<Long, String> warehouseMap = warehouses.stream()
+                    .collect(Collectors.toMap(WmsWarehouse::getId, WmsWarehouse::getName));
+            records.forEach(e -> e.setWarehouseName(warehouseMap.get(e.getWarehouseId())));
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

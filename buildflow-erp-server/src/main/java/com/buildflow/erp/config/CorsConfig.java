@@ -14,7 +14,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class CorsConfig {
 
-    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:3001,http://127.0.0.1:5173}")
     private String allowedOrigins;
 
     /**
@@ -25,9 +25,9 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // 从配置读取允许的源地址，不再使用通配符
+        // 从配置读取允许的源地址，使用 OriginPattern 支持通配符
         for (String origin : allowedOrigins.split(",")) {
-            config.addAllowedOrigin(origin.trim());
+            config.addAllowedOriginPattern(origin.trim());
         }
         config.setAllowCredentials(true);
         // 仅允许必要的HTTP方法

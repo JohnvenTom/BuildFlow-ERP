@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="supplier-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -16,10 +16,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="合作状态">
-          <el-select v-model="searchForm.cooperateStatus" placeholder="请选择合作状态" clearable>
-            <el-option label="合作中" value="合作中" />
-            <el-option label="已暂停" value="已暂停" />
-            <el-option label="已终止" value="已终止" />
+          <el-select v-model="searchForm.cooperationStatus" placeholder="请选择合作状态" clearable>
+            <el-option label="合作中" :value="0" />
+            <el-option label="已暂停" :value="1" />
+            <el-option label="已终止" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -40,17 +40,17 @@
 
       <el-table :data="tableData" v-loading="loading" border stripe>
         <el-table-column prop="name" label="供应商名称" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="category" label="主营品类" width="110" show-overflow-tooltip />
+        <el-table-column prop="mainCategory" label="主营品类" width="110" show-overflow-tooltip />
         <el-table-column prop="contact" label="联系人" width="100" show-overflow-tooltip />
         <el-table-column prop="phone" label="电话" width="130" show-overflow-tooltip />
         <el-table-column prop="settlementCycle" label="结算周期" width="110" show-overflow-tooltip />
-        <el-table-column prop="payLimit" label="应付上限" width="120" show-overflow-tooltip>
-          <template #default="{ row }">{{ formatAmount(row.payLimit) }}</template>
+        <el-table-column prop="payableLimit" label="应付上限" width="120" show-overflow-tooltip>
+          <template #default="{ row }">{{ formatAmount(row.payableLimit) }}</template>
         </el-table-column>
-        <el-table-column prop="cooperateStatus" label="合作状态" width="100" show-overflow-tooltip>
+        <el-table-column prop="cooperationStatus" label="合作状态" width="100" show-overflow-tooltip>
           <template #default="{ row }">
-            <el-tag :type="row.cooperateStatus === '合作中' ? 'success' : row.cooperateStatus === '已暂停' ? 'warning' : 'danger'">
-              {{ row.cooperateStatus }}
+            <el-tag :type="cooperationStatusType(row.cooperationStatus)">
+              {{ cooperationStatusText(row.cooperationStatus) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -87,8 +87,8 @@
         <el-form-item label="供应商名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入供应商名称" />
         </el-form-item>
-        <el-form-item label="主营品类" prop="category">
-          <el-select v-model="form.category" placeholder="请选择主营品类" style="width: 100%">
+        <el-form-item label="主营品类" prop="mainCategory">
+          <el-select v-model="form.mainCategory" placeholder="请选择主营品类" style="width: 100%">
             <el-option label="瓷砖" value="瓷砖" />
             <el-option label="管材" value="管材" />
             <el-option label="防水材料" value="防水材料" />
@@ -105,14 +105,14 @@
         <el-form-item label="结算周期" prop="settlementCycle">
           <el-input v-model="form.settlementCycle" placeholder="请输入结算周期，如：月结30天" />
         </el-form-item>
-        <el-form-item label="应付上限" prop="payLimit">
-          <el-input-number v-model="form.payLimit" :min="0" :precision="2" :step="10000" style="width: 100%" />
+        <el-form-item label="应付上限" prop="payableLimit">
+          <el-input-number v-model="form.payableLimit" :min="0" :precision="2" :step="10000" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="合作状态" prop="cooperateStatus">
-          <el-select v-model="form.cooperateStatus" placeholder="请选择合作状态" style="width: 100%">
-            <el-option label="合作中" value="合作中" />
-            <el-option label="已暂停" value="已暂停" />
-            <el-option label="已终止" value="已终止" />
+        <el-form-item label="合作状态" prop="cooperationStatus">
+          <el-select v-model="form.cooperationStatus" placeholder="请选择合作状态" style="width: 100%">
+            <el-option label="合作中" :value="0" />
+            <el-option label="已暂停" :value="1" />
+            <el-option label="已终止" :value="2" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -134,7 +134,7 @@ import { supplierPage, supplierAdd, supplierUpdate, supplierDelete } from '@/api
 const searchForm = reactive({
   name: '',
   category: '',
-  cooperateStatus: ''
+  cooperationStatus: '' as number | ''
 })
 
 /** 分页参数 */
@@ -160,18 +160,18 @@ const formRef = ref<FormInstance>()
 const form = reactive({
   id: undefined as number | undefined,
   name: '',
-  category: '',
+  mainCategory: '',
   contact: '',
   phone: '',
   settlementCycle: '',
-  payLimit: 0,
-  cooperateStatus: ''
+  payableLimit: 0,
+  cooperationStatus: 0 as number
 })
 
 /** 表单校验规则 */
 const formRules = reactive<FormRules>({
   name: [{ required: true, message: '请输入供应商名称', trigger: 'blur' }],
-  category: [{ required: true, message: '请选择主营品类', trigger: 'change' }]
+  mainCategory: [{ required: true, message: '请选择主营品类', trigger: 'change' }]
 })
 
 /**
@@ -182,6 +182,26 @@ const formRules = reactive<FormRules>({
 function formatAmount(value: number | undefined | null): string {
   if (value === null || value === undefined) return '0.00'
   return Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+/**
+ * 合作状态码转中文文本
+ * @param status 状态码（0-合作中 1-已暂停 2-已终止）
+ * @returns 中文状态文本
+ */
+function cooperationStatusText(status: number | undefined | null): string {
+  const map: Record<number, string> = { 0: '合作中', 1: '已暂停', 2: '已终止' }
+  return map[Number(status)] ?? '未知'
+}
+
+/**
+ * 合作状态码转标签类型
+ * @param status 状态码（0-合作中 1-已暂停 2-已终止）
+ * @returns Element Plus 标签类型
+ */
+function cooperationStatusType(status: number | undefined | null): 'success' | 'warning' | 'danger' | 'info' {
+  const map: Record<number, 'success' | 'warning' | 'danger'> = { 0: 'success', 1: 'warning', 2: 'danger' }
+  return map[Number(status)] ?? 'info'
 }
 
 /**
@@ -196,7 +216,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -219,7 +239,7 @@ function handleSearch() {
 function handleReset() {
   searchForm.name = ''
   searchForm.category = ''
-  searchForm.cooperateStatus = ''
+  searchForm.cooperationStatus = ''
   handleSearch()
 }
 
@@ -230,12 +250,12 @@ function handleReset() {
 function resetForm() {
   form.id = undefined
   form.name = ''
-  form.category = ''
+  form.mainCategory = ''
   form.contact = ''
   form.phone = ''
   form.settlementCycle = ''
-  form.payLimit = 0
-  form.cooperateStatus = ''
+  form.payableLimit = 0
+  form.cooperationStatus = 0
 }
 
 /**

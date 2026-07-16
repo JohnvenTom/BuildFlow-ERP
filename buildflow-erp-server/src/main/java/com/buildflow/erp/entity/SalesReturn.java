@@ -64,4 +64,12 @@ public class SalesReturn {
     /** 更新时间，新增和更新时自动填充 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /** 客户名称（关联查询，非数据库字段） */
+    @TableField(exist = false)
+    private String customerName;
+
+    /** 关联出库单号（关联查询，非数据库字段） */
+    @TableField(exist = false)
+    private String deliveryOrderNo;
 }

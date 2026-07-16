@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.CrmCustomer;
+import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.CrmCustomerMapper;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.CrmCustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,10 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 客户服务实现类
@@ -24,6 +30,9 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
 
     @Autowired
     private CrmCustomerMapper crmCustomerMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     /**
      * 分页查询客户列表
@@ -51,7 +60,21 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
                         .or().isNull(CrmCustomer::getCurrentDebt))
                 .orderByDesc(CrmCustomer::getCreateTime);
         Page<CrmCustomer> result = crmCustomerMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<CrmCustomer> records = result.getRecords();
+        // 批量查询业务员名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> salespersonIds = records.stream()
+                    .map(CrmCustomer::getSalespersonId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!salespersonIds.isEmpty()) {
+                List<SysUser> users = sysUserMapper.selectBatchIds(salespersonIds);
+                Map<Long, String> userMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName));
+                records.forEach(c -> c.setSalespersonName(userMap.get(c.getSalespersonId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

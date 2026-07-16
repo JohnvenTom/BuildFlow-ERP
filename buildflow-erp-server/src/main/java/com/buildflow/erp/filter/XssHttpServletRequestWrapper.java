@@ -2,8 +2,8 @@ package com.buildflow.erp.filter;
 
 import org.springframework.web.util.HtmlUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

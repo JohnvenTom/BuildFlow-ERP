@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="warehouse-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -39,7 +39,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="address" label="地址" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="manager" label="管理员" width="120" show-overflow-tooltip />
+        <el-table-column prop="managerName" label="管理员" width="120" show-overflow-tooltip />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -153,7 +153,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

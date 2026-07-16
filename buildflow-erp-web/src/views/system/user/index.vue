@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="user-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -92,6 +92,9 @@
         <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
         <el-form-item label="角色" prop="roleIds">
           <el-select v-model="form.roleIds" placeholder="请选择角色" style="width: 100%" multiple>
             <el-option
@@ -157,6 +160,7 @@ const form = reactive({
   username: '',
   realName: '',
   phone: '',
+  email: '',
   roleIds: [] as number[],
   status: 1
 })
@@ -183,7 +187,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -227,6 +231,7 @@ function resetForm() {
   form.username = ''
   form.realName = ''
   form.phone = ''
+  form.email = ''
   form.roleIds = []
   form.status = 1
 }
@@ -254,6 +259,7 @@ function handleEdit(row: any) {
     username: row.username,
     realName: row.realName,
     phone: row.phone,
+    email: row.email || '',
     roleIds: row.roleIds || [],
     status: row.status
   })

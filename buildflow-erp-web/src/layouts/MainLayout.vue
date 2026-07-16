@@ -3,13 +3,15 @@
     <!-- 左侧菜单 -->
     <el-aside :width="isCollapse ? '64px' : '220px'" class="aside">
       <div class="logo">
-        <img src="/vite.svg" alt="logo" class="logo-img" />
+        <img src="/logo.svg" alt="logo" class="logo-img" />
         <span v-show="!isCollapse" class="logo-text">BuildFlow ERP</span>
       </div>
       <el-menu
         :default-active="activeMenu"
+        :default-openeds="defaultOpeneds"
         :collapse="isCollapse"
         :collapse-transition="false"
+        :unique-opened="false"
         router
         background-color="#304156"
         text-color="#bfcbd9"
@@ -17,7 +19,7 @@
       >
         <template v-for="menu in menuList" :key="menu.id">
           <!-- 有子菜单 -->
-          <el-sub-menu v-if="menu.children && menu.children.length" :index="menu.path">
+          <el-sub-menu v-if="menu.children && menu.children.length" :index="String(menu.id)">
             <template #title>
               <el-icon><component :is="menu.icon" /></el-icon>
               <span>{{ menu.name }}</span>
@@ -97,6 +99,8 @@ const activeMenu = computed(() => route.path)
 const currentRoute = computed(() => route)
 /** 菜单列表 */
 const menuList = computed(() => userStore.menuList)
+/** 默认展开的子菜单ID列表（全部展开） */
+const defaultOpeneds = computed(() => menuList.value.filter(m => m.children?.length).map(m => String(m.id)))
 
 /**
  * 切换侧边栏折叠/展开
@@ -125,9 +129,12 @@ function handleCommand(command: string) {
   background-color: #304156;
   transition: width 0.3s;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .logo {
     height: 50px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -149,6 +156,9 @@ function handleCommand(command: string) {
 
   .el-menu {
     border-right: none;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 

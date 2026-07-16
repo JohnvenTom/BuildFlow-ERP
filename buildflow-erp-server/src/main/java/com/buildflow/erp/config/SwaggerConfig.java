@@ -1,93 +1,61 @@
 package com.buildflow.erp.config;
 
-import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.SecurityReference;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Knife4j API文档配置类
- * 配置Swagger2文档，提供接口文档和在线调试功能
+ * Knife4j 4.x / OpenAPI 3 文档配置类
+ * 替代原 Swagger 2 配置，基于 springdoc-openapi 提供 API 文档与在线调试
+ *
+ * <p>访问地址：http://localhost:8080/api/doc.html</p>
  */
 @Configuration
-@EnableSwagger2
-@EnableKnife4j
 public class SwaggerConfig {
 
+    /** JWT 认证方案名称 */
+    private static final String SECURITY_SCHEME_NAME = "Authorization";
+
     /**
-     * 配置API文档Docket
-     * @return Docket Swagger配置对象
+     * 配置 OpenAPI 文档
+     * @description 构建 OpenAPI 3 文档，包含 API 基本信息、JWT Bearer 认证方案
+     * @return OpenAPI 文档配置对象
      */
     @Bean
-    public Docket createRestApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(apiInfo())
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.buildflow.erp.controller"))
-                .paths(PathSelectors.any())
-                .build()
-                .securitySchemes(securitySchemes())
-                .securityContexts(securityContexts());
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(apiInfo())
+                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+                .components(new Components()
+                        .addSecuritySchemes(SECURITY_SCHEME_NAME, securityScheme()));
     }
 
     /**
      * 构建API文档基本信息
-     * @return ApiInfo 文档信息
+     * @return Info 文档信息
      */
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
+    private Info apiInfo() {
+        return new Info()
                 .title("BuildFlow ERP 建材进销存CRM系统 API文档")
                 .description("建材行业一体化进销存CRM系统后端接口文档")
-                .version("1.0.0")
-                .build();
+                .version("1.0.0");
     }
 
     /**
-     * 配置安全方案（JWT Bearer Token）
-     * @return 安全方案列表
+     * 配置JWT Bearer Token认证方案
+     * @description 通过请求头 Authorization 传递 Bearer Token 进行认证
+     * @return SecurityScheme 安全方案
      */
-    private List<springfox.documentation.service.SecurityScheme> securitySchemes() {
-        List<springfox.documentation.service.SecurityScheme> schemes = new ArrayList<>();
-        schemes.add(new ApiKey("Authorization", "Authorization", "header"));
-        return schemes;
-    }
-
-    /**
-     * 配置安全上下文
-     * @return 安全上下文列表
-     */
-    private List<SecurityContext> securityContexts() {
-        List<SecurityContext> contexts = new ArrayList<>();
-        contexts.add(SecurityContext.builder()
-                .securityReferences(defaultAuth())
-                .forPaths(PathSelectors.regex("^(?!auth).*$"))
-                .build());
-        return contexts;
-    }
-
-    /**
-     * 默认安全引用
-     * @return 安全引用列表
-     */
-    private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-        authorizationScopes[0] = authorizationScope;
-        List<SecurityReference> references = new ArrayList<>();
-        references.add(new SecurityReference("Authorization", authorizationScopes));
-        return references;
+    private SecurityScheme securityScheme() {
+        return new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .in(SecurityScheme.In.HEADER)
+                .name(SECURITY_SCHEME_NAME);
     }
 }

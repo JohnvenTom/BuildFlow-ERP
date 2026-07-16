@@ -28,6 +28,10 @@ public class CrmFollowRecord {
     /** 客户ID，关联 crm_customer.id */
     private Long customerId;
 
+    /** 客户名称（非数据库字段，关联查询 crm_customer.name 填充） */
+    @TableField(exist = false)
+    private String customerName;
+
     /** 跟进类型（如：电话、拜访、微信等） */
     private String followType;
 
@@ -39,6 +43,10 @@ public class CrmFollowRecord {
 
     /** 业务员ID，关联 sys_user.id */
     private Long salespersonId;
+
+    /** 业务员名称（非数据库字段，关联查询 sys_user.realName 填充） */
+    @TableField(exist = false)
+    private String salespersonName;
 
     /** 逻辑删除标识（0-未删除 1-已删除） */
     @TableLogic

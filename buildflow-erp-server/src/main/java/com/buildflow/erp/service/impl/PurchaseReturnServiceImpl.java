@@ -7,9 +7,11 @@ import com.buildflow.erp.common.constants.Constants;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.common.utils.OrderNoGenerator;
+import com.buildflow.erp.entity.CrmSupplier;
 import com.buildflow.erp.entity.PurchaseReturn;
 import com.buildflow.erp.entity.PurchaseReturnItem;
 import com.buildflow.erp.entity.PurchaseStockIn;
+import com.buildflow.erp.mapper.CrmSupplierMapper;
 import com.buildflow.erp.mapper.PurchaseReturnItemMapper;
 import com.buildflow.erp.mapper.PurchaseReturnMapper;
 import com.buildflow.erp.mapper.PurchaseStockInMapper;
@@ -22,6 +24,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 采购退货单服务实现类
@@ -39,6 +44,9 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
 
     @Autowired
     private PurchaseStockInMapper purchaseStockInMapper;
+
+    @Autowired
+    private CrmSupplierMapper crmSupplierMapper;
 
     @Autowired
     private WmsInventoryService wmsInventoryService;
@@ -63,7 +71,32 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
                 .eq(StringUtils.hasText(status), PurchaseReturn::getStatus, status)
                 .orderByDesc(PurchaseReturn::getCreateTime);
         Page<PurchaseReturn> result = purchaseReturnMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<PurchaseReturn> records = result.getRecords();
+        // 批量查询供应商名称并填充到结果中
+        List<Long> supplierIds = records.stream()
+                .map(PurchaseReturn::getSupplierId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!supplierIds.isEmpty()) {
+            List<CrmSupplier> suppliers = crmSupplierMapper.selectBatchIds(supplierIds);
+            Map<Long, String> supplierMap = suppliers.stream()
+                    .collect(Collectors.toMap(CrmSupplier::getId, CrmSupplier::getName));
+            records.forEach(e -> e.setSupplierName(supplierMap.get(e.getSupplierId())));
+        }
+        // 批量查询关联入库单号并填充到结果中
+        List<Long> stockInIds = records.stream()
+                .map(PurchaseReturn::getStockInId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!stockInIds.isEmpty()) {
+            List<PurchaseStockIn> stockIns = purchaseStockInMapper.selectBatchIds(stockInIds);
+            Map<Long, String> stockInMap = stockIns.stream()
+                    .collect(Collectors.toMap(PurchaseStockIn::getId, PurchaseStockIn::getStockInNo));
+            records.forEach(e -> e.setStockInOrderNo(stockInMap.get(e.getStockInId())));
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

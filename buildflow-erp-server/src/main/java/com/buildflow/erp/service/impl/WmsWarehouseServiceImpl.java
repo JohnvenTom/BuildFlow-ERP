@@ -5,13 +5,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.WmsWarehouse;
+import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.WmsWarehouseMapper;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.WmsWarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 仓库档案服务实现类
@@ -22,6 +28,9 @@ public class WmsWarehouseServiceImpl implements WmsWarehouseService {
 
     @Autowired
     private WmsWarehouseMapper wmsWarehouseMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     /**
      * 分页查询仓库列表
@@ -41,7 +50,21 @@ public class WmsWarehouseServiceImpl implements WmsWarehouseService {
                 .eq(StringUtils.hasText(type), WmsWarehouse::getType, type)
                 .orderByDesc(WmsWarehouse::getCreateTime);
         Page<WmsWarehouse> result = wmsWarehouseMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<WmsWarehouse> records = result.getRecords();
+        // 批量查询管理员名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> managerIds = records.stream()
+                    .map(WmsWarehouse::getManagerId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!managerIds.isEmpty()) {
+                List<SysUser> users = sysUserMapper.selectBatchIds(managerIds);
+                Map<Long, String> userMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName));
+                records.forEach(w -> w.setManagerName(userMap.get(w.getManagerId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

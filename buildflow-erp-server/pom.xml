@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
+        <version>3.2.5</version>
         <relativePath/>
     </parent>
 
@@ -18,11 +18,11 @@
     <description>建材进销存CRM系统后端服务</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
-        <jjwt.version>0.9.1</jjwt.version>
+        <jjwt.version>0.12.5</jjwt.version>
         <poi.version>5.2.5</poi.version>
-        <knife4j.version>3.0.3</knife4j.version>
+        <knife4j.version>4.4.0</knife4j.version>
         <spring-dotenv.version>4.0.0</spring-dotenv.version>
     </properties>
 
@@ -45,10 +45,10 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- MyBatis-Plus -->
+        <!-- MyBatis-Plus (Spring Boot 3 专用 Starter) -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>${mybatis-plus.version}</version>
         </dependency>
 
@@ -59,18 +59,23 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- JWT -->
+        <!-- JWT (jjwt 0.12.x 拆分为三个模块) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
+            <artifactId>jjwt-api</artifactId>
             <version>${jjwt.version}</version>
         </dependency>
-
-        <!-- JAXB (JWT依赖, JDK8+) -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Lombok -->
@@ -87,10 +92,10 @@
             <version>${poi.version}</version>
         </dependency>
 
-        <!-- Knife4j - API文档 -->
+        <!-- Knife4j 4.x - 基于 OpenAPI 3 (Jakarta) -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
             <version>${knife4j.version}</version>
         </dependency>
 

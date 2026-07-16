@@ -25,6 +25,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 销售退货单服务实现类
@@ -69,7 +72,32 @@ public class SalesReturnServiceImpl implements SalesReturnService {
                 .eq(StringUtils.hasText(status), SalesReturn::getStatus, status)
                 .orderByDesc(SalesReturn::getCreateTime);
         Page<SalesReturn> result = salesReturnMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<SalesReturn> records = result.getRecords();
+        // 批量查询客户名称并填充到结果中
+        List<Long> customerIds = records.stream()
+                .map(SalesReturn::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!customerIds.isEmpty()) {
+            List<CrmCustomer> customers = crmCustomerMapper.selectBatchIds(customerIds);
+            Map<Long, String> customerMap = customers.stream()
+                    .collect(Collectors.toMap(CrmCustomer::getId, CrmCustomer::getName));
+            records.forEach(e -> e.setCustomerName(customerMap.get(e.getCustomerId())));
+        }
+        // 批量查询关联出库单号并填充到结果中
+        List<Long> deliveryIds = records.stream()
+                .map(SalesReturn::getDeliveryId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!deliveryIds.isEmpty()) {
+            List<DeliveryOrder> deliveries = deliveryOrderMapper.selectBatchIds(deliveryIds);
+            Map<Long, String> deliveryMap = deliveries.stream()
+                    .collect(Collectors.toMap(DeliveryOrder::getId, DeliveryOrder::getDeliveryNo));
+            records.forEach(e -> e.setDeliveryOrderNo(deliveryMap.get(e.getDeliveryId())));
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

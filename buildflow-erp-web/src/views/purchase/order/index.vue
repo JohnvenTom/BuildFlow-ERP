@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="purchase-order-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -253,7 +253,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -399,7 +399,21 @@ async function handleSubmit() {
     ElMessage.warning('请选择明细中的商品')
     return
   }
-  await purchaseOrderAdd({ ...form })
+  // 转换为后端DTO格式 {order: {...}, items: [...]}
+  const dto = {
+    order: {
+      supplierId: form.supplierId,
+      remark: form.remark
+    },
+    items: form.details.map(d => ({
+      productId: d.productId,
+      colorCode: d.colorCode,
+      unitPrice: d.unitPrice,
+      quantity: d.quantity,
+      amount: d.amount
+    }))
+  }
+  await purchaseOrderAdd(dto)
   ElMessage.success('新增成功')
   dialogVisible.value = false
   loadData()

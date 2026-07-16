@@ -50,6 +50,10 @@ public class CrmCustomer {
     /** 业务员ID，关联 sys_user.id */
     private Long salespersonId;
 
+    /** 业务员名称（非数据库字段，关联查询 sys_user.realName 填充） */
+    @TableField(exist = false)
+    private String salespersonName;
+
     /** 客户状态（0-正常 1-作废） */
     private Integer status;
 

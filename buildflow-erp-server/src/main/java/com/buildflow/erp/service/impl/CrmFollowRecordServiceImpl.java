@@ -5,7 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.CrmFollowRecord;
+import com.buildflow.erp.entity.CrmCustomer;
+import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.CrmFollowRecordMapper;
+import com.buildflow.erp.mapper.CrmCustomerMapper;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.CrmFollowRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 客户跟进记录服务实现类
@@ -25,6 +34,12 @@ public class CrmFollowRecordServiceImpl implements CrmFollowRecordService {
 
     @Autowired
     private CrmFollowRecordMapper crmFollowRecordMapper;
+
+    @Autowired
+    private CrmCustomerMapper crmCustomerMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     /**
      * 分页查询跟进记录列表
@@ -54,7 +69,31 @@ public class CrmFollowRecordServiceImpl implements CrmFollowRecordService {
                         StringUtils.hasText(endTime) ? LocalDateTime.parse(endTime, FORMATTER) : null)
                 .orderByDesc(CrmFollowRecord::getCreateTime);
         Page<CrmFollowRecord> result = crmFollowRecordMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<CrmFollowRecord> records = result.getRecords();
+        // 批量查询客户名称和业务员名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> customerIds = records.stream()
+                    .map(CrmFollowRecord::getCustomerId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            Set<Long> salespersonIds = records.stream()
+                    .map(CrmFollowRecord::getSalespersonId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!customerIds.isEmpty()) {
+                List<CrmCustomer> customers = crmCustomerMapper.selectBatchIds(customerIds);
+                Map<Long, String> customerMap = customers.stream()
+                        .collect(Collectors.toMap(CrmCustomer::getId, CrmCustomer::getName));
+                records.forEach(r -> r.setCustomerName(customerMap.get(r.getCustomerId())));
+            }
+            if (!salespersonIds.isEmpty()) {
+                List<SysUser> users = sysUserMapper.selectBatchIds(salespersonIds);
+                Map<Long, String> userMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName));
+                records.forEach(r -> r.setSalespersonName(userMap.get(r.getSalespersonId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

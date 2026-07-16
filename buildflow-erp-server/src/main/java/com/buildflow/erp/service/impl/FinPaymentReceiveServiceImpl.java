@@ -24,6 +24,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 客户回款单服务实现类
@@ -65,7 +68,20 @@ public class FinPaymentReceiveServiceImpl implements FinPaymentReceiveService {
                 .eq(StringUtils.hasText(status), FinPaymentReceive::getStatus, status)
                 .orderByDesc(FinPaymentReceive::getCreateTime);
         Page<FinPaymentReceive> result = finPaymentReceiveMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<FinPaymentReceive> records = result.getRecords();
+        // 批量查询客户名称并填充到结果中
+        List<Long> customerIds = records.stream()
+                .map(FinPaymentReceive::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!customerIds.isEmpty()) {
+            List<CrmCustomer> customers = crmCustomerMapper.selectBatchIds(customerIds);
+            Map<Long, String> customerMap = customers.stream()
+                    .collect(Collectors.toMap(CrmCustomer::getId, CrmCustomer::getName));
+            records.forEach(e -> e.setCustomerName(customerMap.get(e.getCustomerId())));
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

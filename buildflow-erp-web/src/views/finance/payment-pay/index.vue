@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="payment-pay-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="付款单号">
-          <el-input v-model="searchForm.paymentNo" placeholder="请输入付款单号" clearable />
+          <el-input v-model="searchForm.payNo" placeholder="请输入付款单号" clearable />
         </el-form-item>
         <el-form-item label="供应商">
           <el-select v-model="searchForm.supplierId" placeholder="请选择供应商" clearable filterable>
@@ -40,12 +40,12 @@
       </template>
 
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="paymentNo" label="付款单号" width="160" show-overflow-tooltip />
+        <el-table-column prop="payNo" label="付款单号" width="160" show-overflow-tooltip />
         <el-table-column prop="supplierName" label="供应商名称" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="paymentAmount" label="付款金额" width="130" show-overflow-tooltip>
-          <template #default="{ row }">{{ formatAmount(row.paymentAmount) }}</template>
+        <el-table-column prop="amount" label="付款金额" width="130" show-overflow-tooltip>
+          <template #default="{ row }">{{ formatAmount(row.amount) }}</template>
         </el-table-column>
-        <el-table-column prop="paymentMethod" label="付款方式" width="100" show-overflow-tooltip />
+        <el-table-column prop="payMethod" label="付款方式" width="100" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="100" show-overflow-tooltip>
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)">{{ row.status }}</el-tag>
@@ -92,8 +92,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="付款方式" prop="paymentMethod">
-          <el-select v-model="form.paymentMethod" placeholder="请选择付款方式" style="width: 100%">
+        <el-form-item label="付款方式" prop="payMethod">
+          <el-select v-model="form.payMethod" placeholder="请选择付款方式" style="width: 100%">
             <el-option label="现金" value="现金" />
             <el-option label="转账" value="转账" />
             <el-option label="支票" value="支票" />
@@ -159,7 +159,7 @@ import { supplierList } from '@/api/crm'
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  paymentNo: '',
+  payNo: '',
   supplierId: undefined as number | undefined,
   status: ''
 })
@@ -195,7 +195,7 @@ interface WriteOffDetail {
 /** 付款单表单数据 */
 const form = reactive({
   supplierId: undefined as number | undefined,
-  paymentMethod: '',
+  payMethod: '',
   remark: '',
   details: [] as WriteOffDetail[]
 })
@@ -203,7 +203,7 @@ const form = reactive({
 /** 表单校验规则 */
 const formRules = reactive<FormRules>({
   supplierId: [{ required: true, message: '请选择供应商', trigger: 'change' }],
-  paymentMethod: [{ required: true, message: '请选择付款方式', trigger: 'change' }]
+  payMethod: [{ required: true, message: '请选择付款方式', trigger: 'change' }]
 })
 
 /**
@@ -248,7 +248,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -271,7 +271,7 @@ async function loadSupplierOptions() {
  */
 async function loadPayableOptions(supplierId: number) {
   const res = await payablePage({ supplierId, status: '正常', pageNum: 1, pageSize: 999 })
-  payableOptions.value = res.data?.list || []
+  payableOptions.value = res.data?.rows || []
 }
 
 /**
@@ -312,7 +312,7 @@ function handleSearch() {
  * @description 清空搜索表单并重新加载数据
  */
 function handleReset() {
-  searchForm.paymentNo = ''
+  searchForm.payNo = ''
   searchForm.supplierId = undefined
   searchForm.status = ''
   handleSearch()
@@ -324,7 +324,7 @@ function handleReset() {
  */
 function resetForm() {
   form.supplierId = undefined
-  form.paymentMethod = ''
+  form.payMethod = ''
   form.remark = ''
   form.details = []
   payableOptions.value = []
@@ -387,7 +387,7 @@ async function handleAudit(row: any) {
  * @throws 用户取消作废时不执行操作
  */
 async function handleVoid(row: any) {
-  await ElMessageBox.confirm(`确定要作废付款单「${row.paymentNo}」吗？`, '作废确认', {
+  await ElMessageBox.confirm(`确定要作废付款单「${row.payNo}」吗？`, '作废确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -419,7 +419,18 @@ async function handleSubmit() {
     ElMessage.warning('核销金额必须大于0')
     return
   }
-  await paymentPayAdd({ ...form })
+  // 按后端 FinPaymentPayDTO 结构组装：主表 pay + 明细 items
+  await paymentPayAdd({
+    pay: {
+      supplierId: form.supplierId,
+      payMethod: form.payMethod,
+      remark: form.remark
+    },
+    items: form.details.map((d) => ({
+      payableId: d.payableId,
+      writeOffAmount: d.writeOffAmount
+    }))
+  })
   ElMessage.success('新增成功')
   dialogVisible.value = false
   loadData()

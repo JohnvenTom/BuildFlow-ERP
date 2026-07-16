@@ -10,6 +10,18 @@ export interface LoginRequest {
 export interface LoginResponse {
   /** 访问令牌 */
   token: string
+  /** 用户ID */
+  userId: number
+  /** 用户名 */
+  username: string
+  /** 真实姓名 */
+  realName: string
+  /** 角色ID */
+  roleId: number
+  /** 角色名称 */
+  roleName: string
+  /** 菜单权限树 */
+  menus: any[]
 }
 
 /** 用户信息 */
@@ -59,7 +71,7 @@ export interface PageParams {
 /** 分页结果 */
 export interface PageResult<T> {
   /** 数据列表 */
-  list: T[]
+  rows: T[]
   /** 总条数 */
   total: number
 }

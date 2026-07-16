@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="log-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -102,7 +102,7 @@ async function loadData() {
       params.endTime = searchForm.dateRange[1]
     }
     const res = await logPage(params)
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

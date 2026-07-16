@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="customer-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -40,8 +40,8 @@
       <el-table :data="tableData" v-loading="loading" border stripe>
         <el-table-column prop="name" label="客户名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="type" label="客户类型" width="110" show-overflow-tooltip />
-        <el-table-column prop="address" label="地址" min-width="160" show-overflow-tooltip />
         <el-table-column prop="contact" label="联系人" width="100" show-overflow-tooltip />
+        <el-table-column prop="salespersonName" label="负责业务员" width="110" show-overflow-tooltip />
         <el-table-column prop="phone" label="电话" width="130" show-overflow-tooltip />
         <el-table-column prop="creditLimit" label="信用额度" width="120" show-overflow-tooltip>
           <template #default="{ row }">{{ formatAmount(row.creditLimit) }}</template>
@@ -49,7 +49,7 @@
         <el-table-column prop="currentDebt" label="当前欠款" width="120" show-overflow-tooltip>
           <template #default="{ row }">{{ formatAmount(row.currentDebt) }}</template>
         </el-table-column>
-        <el-table-column prop="salesperson" label="负责业务员" width="110" show-overflow-tooltip />
+        <el-table-column prop="address" label="地址" min-width="160" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="90" show-overflow-tooltip>
           <template #default="{ row }">
             <el-tag :type="row.status === '正常' ? 'success' : row.status === '逾期' ? 'danger' : 'info'">
@@ -204,7 +204,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

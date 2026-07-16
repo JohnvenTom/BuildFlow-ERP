@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="product-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -35,7 +35,7 @@
         <el-table-column prop="name" label="商品名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="category" label="分类" width="110" show-overflow-tooltip />
         <el-table-column prop="spec" label="规格" width="120" show-overflow-tooltip />
-        <el-table-column prop="colorCode" label="色号" width="100" show-overflow-tooltip />
+        <el-table-column prop="colorNo" label="色号" width="100" show-overflow-tooltip />
         <el-table-column prop="unit" label="单位" width="80" show-overflow-tooltip />
         <el-table-column prop="purchasePrice" label="采购价" width="120" show-overflow-tooltip>
           <template #default="{ row }">{{ formatAmount(row.purchasePrice) }}</template>
@@ -185,7 +185,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

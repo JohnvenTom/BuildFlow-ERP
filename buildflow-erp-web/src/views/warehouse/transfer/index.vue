@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="transfer-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -99,7 +99,7 @@
         <el-form-item label="调拨明细">
           <el-table :data="form.details" border style="width: 100%">
             <el-table-column label="商品" min-width="200">
-              <template #default="{ row, $index }">
+              <template #default="{ row }">
                 <el-select v-model="row.productId" placeholder="请选择商品" style="width: 100%">
                   <el-option
                     v-for="item in productOptions"
@@ -215,7 +215,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

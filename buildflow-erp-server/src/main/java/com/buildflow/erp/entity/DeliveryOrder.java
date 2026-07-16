@@ -64,4 +64,12 @@ public class DeliveryOrder {
     /** 更新时间，新增和更新时自动填充 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /** 销售订单号（关联查询，非数据库字段） */
+    @TableField(exist = false)
+    private String salesOrderNo;
+
+    /** 出库仓库名称（关联查询，非数据库字段） */
+    @TableField(exist = false)
+    private String warehouseName;
 }

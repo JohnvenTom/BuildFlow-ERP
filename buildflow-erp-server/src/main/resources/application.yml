@@ -36,10 +36,25 @@ jwt:
 # 运行环境（dev/test/prod）
 
 
-# Knife4j文档配置（生产环境关闭）
+# Knife4j 4.x 文档配置（基于 OpenAPI 3）
 knife4j:
   enable: ${KNIFE4J_ENABLE:true}
   production: ${KNIFE4J_PRODUCTION:false}
+  setting:
+    language: zh_cn
+
+# Springdoc OpenAPI 3 配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.buildflow.erp.controller
 
 # 接口签名密钥
 api:

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="follow-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -58,8 +58,8 @@
           </template>
         </el-table-column>
         <el-table-column prop="content" label="跟进内容" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="nextVisitDate" label="下次回访时间" width="130" show-overflow-tooltip />
-        <el-table-column prop="salesperson" label="跟进业务员" width="110" show-overflow-tooltip />
+        <el-table-column prop="nextVisitTime" label="下次回访时间" width="130" show-overflow-tooltip />
+        <el-table-column prop="salespersonName" label="跟进业务员" width="110" show-overflow-tooltip />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -202,7 +202,7 @@ async function loadData() {
       params.endDate = searchForm.dateRange[1]
     }
     const res = await followPage(params)
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

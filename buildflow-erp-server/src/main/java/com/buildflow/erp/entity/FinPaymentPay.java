@@ -64,4 +64,8 @@ public class FinPaymentPay {
     /** 更新时间，新增和更新时自动填充 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /** 供应商名称（关联查询，非数据库字段） */
+    @TableField(exist = false)
+    private String supplierName;
 }

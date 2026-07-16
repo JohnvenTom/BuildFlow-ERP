@@ -2,10 +2,12 @@ package com.buildflow.erp.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +15,13 @@ import java.util.Map;
 /**
  * JWT工具类
  * 提供JWT令牌的生成、解析、验证功能
+ *
+ * <p>jjwt 0.12.x API 升级说明：
+ * <ul>
+ *   <li>使用 Jwts.builder().signWith(SecretKey) 替代 signWith(SignatureAlgorithm, String)</li>
+ *   <li>使用 Jwts.parser().verifyWith(SecretKey).build() 替代 parser().setSigningKey(String)</li>
+ *   <li>密钥使用 Keys.hmacShaKeyFor() 构建，要求密钥长度 >= 256 位（32字节）</li>
+ * </ul></p>
  */
 @Component
 public class JwtTokenUtil {
@@ -22,6 +31,15 @@ public class JwtTokenUtil {
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    /**
+     * 构建HMAC-SHA签名密钥
+     * @description 将字符串密钥转换为符合jjwt 0.12.x要求的SecretKey对象
+     * @return SecretKey HMAC-SHA密钥
+     */
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     /**
      * 生成JWT令牌
@@ -36,11 +54,11 @@ public class JwtTokenUtil {
         claims.put("username", username);
         claims.put("roleId", roleId);
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
                 .compact();
     }
 
@@ -92,12 +110,13 @@ public class JwtTokenUtil {
      * @param token JWT令牌
      * @return Claims对象
      * @throws io.jsonwebtoken.ExpiredJwtException 令牌过期时抛出
-     * @throws io.jsonwebtoken.SignatureException 签名不匹配时抛出
+     * @throws io.jsonwebtoken.security.SignatureException 签名不匹配时抛出
      */
     private Claims getClaimsFromToken(String token) {
         return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

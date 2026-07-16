@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="inventory-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -36,7 +36,7 @@
         <el-table-column prop="productName" label="商品名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="warehouseName" label="仓库" min-width="140" show-overflow-tooltip />
         <el-table-column prop="batchNo" label="批次号" width="140" show-overflow-tooltip />
-        <el-table-column prop="colorCode" label="色号" width="100" show-overflow-tooltip />
+        <el-table-column prop="colorNo" label="色号" width="100" show-overflow-tooltip />
         <el-table-column prop="quantity" label="库存数量" width="120" show-overflow-tooltip />
       </el-table>
 
@@ -102,7 +102,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false

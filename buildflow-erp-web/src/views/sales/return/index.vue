@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="sales-return-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="退货单号">
-          <el-input v-model="searchForm.orderNo" placeholder="请输入退货单号" clearable />
+          <el-input v-model="searchForm.returnNo" placeholder="请输入退货单号" clearable />
         </el-form-item>
         <el-form-item label="客户">
           <el-select v-model="searchForm.customerId" placeholder="请选择客户" clearable>
@@ -40,7 +40,7 @@
       </template>
 
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="orderNo" label="退货单号" width="160" show-overflow-tooltip />
+        <el-table-column prop="returnNo" label="退货单号" width="160" show-overflow-tooltip />
         <el-table-column prop="customerName" label="客户" min-width="140" show-overflow-tooltip />
         <el-table-column prop="deliveryOrderNo" label="关联出库单" width="160" show-overflow-tooltip />
         <el-table-column prop="totalAmount" label="总金额" width="130" show-overflow-tooltip>
@@ -97,7 +97,7 @@
             <el-option
               v-for="item in deliveryOptions"
               :key="item.id"
-              :label="item.orderNo"
+              :label="item.deliveryNo"
               :value="item.id"
             />
           </el-select>
@@ -173,7 +173,7 @@ import { productList } from '@/api/warehouse'
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  orderNo: '',
+  returnNo: '',
   customerId: undefined as number | undefined,
   status: ''
 })
@@ -266,7 +266,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -297,7 +297,7 @@ async function loadProductOptions() {
  */
 async function loadDeliveryOptions() {
   const res = await deliveryPage({ pageNum: 1, pageSize: 999, status: '已审核' })
-  deliveryOptions.value = res.data?.list || []
+  deliveryOptions.value = res.data?.rows || []
 }
 
 /**
@@ -314,7 +314,7 @@ function handleSearch() {
  * @description 清空搜索表单并重新加载数据
  */
 function handleReset() {
-  searchForm.orderNo = ''
+  searchForm.returnNo = ''
   searchForm.customerId = undefined
   searchForm.status = ''
   handleSearch()
@@ -396,7 +396,7 @@ async function handleAudit(row: any) {
  * @throws 用户取消作废时不执行操作
  */
 async function handleVoid(row: any) {
-  await ElMessageBox.confirm(`确定要作废退货单「${row.orderNo}」吗？`, '作废确认', {
+  await ElMessageBox.confirm(`确定要作废退货单「${row.returnNo}」吗？`, '作废确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -422,7 +422,21 @@ async function handleSubmit() {
     ElMessage.warning('请选择明细中的商品')
     return
   }
-  await salesReturnAdd({ ...form })
+  // 按后端 SalesReturnDTO 结构组装：主表 returnOrder + 明细 items
+  await salesReturnAdd({
+    returnOrder: {
+      customerId: form.customerId,
+      deliveryId: form.deliveryId,
+      remark: form.remark
+    },
+    items: form.details.map((d) => ({
+      productId: d.productId,
+      colorCode: d.colorCode,
+      unitPrice: d.unitPrice,
+      quantity: d.quantity,
+      amount: d.amount
+    }))
+  })
   ElMessage.success('新增成功')
   dialogVisible.value = false
   loadData()

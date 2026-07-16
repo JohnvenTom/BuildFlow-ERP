@@ -7,9 +7,11 @@ import com.buildflow.erp.common.constants.Constants;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.common.utils.OrderNoGenerator;
+import com.buildflow.erp.entity.CrmSupplier;
 import com.buildflow.erp.entity.FinPaymentPay;
 import com.buildflow.erp.entity.FinPaymentPayItem;
 import com.buildflow.erp.entity.FinPayable;
+import com.buildflow.erp.mapper.CrmSupplierMapper;
 import com.buildflow.erp.mapper.FinPayableMapper;
 import com.buildflow.erp.mapper.FinPaymentPayItemMapper;
 import com.buildflow.erp.mapper.FinPaymentPayMapper;
@@ -22,6 +24,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 供应商付款单服务实现类
@@ -39,6 +44,9 @@ public class FinPaymentPayServiceImpl implements FinPaymentPayService {
 
     @Autowired
     private FinPayableMapper finPayableMapper;
+
+    @Autowired
+    private CrmSupplierMapper crmSupplierMapper;
 
     /**
      * 分页查询付款单列表
@@ -60,7 +68,20 @@ public class FinPaymentPayServiceImpl implements FinPaymentPayService {
                 .eq(StringUtils.hasText(status), FinPaymentPay::getStatus, status)
                 .orderByDesc(FinPaymentPay::getCreateTime);
         Page<FinPaymentPay> result = finPaymentPayMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<FinPaymentPay> records = result.getRecords();
+        // 批量查询供应商名称并填充到结果中
+        List<Long> supplierIds = records.stream()
+                .map(FinPaymentPay::getSupplierId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!supplierIds.isEmpty()) {
+            List<CrmSupplier> suppliers = crmSupplierMapper.selectBatchIds(supplierIds);
+            Map<Long, String> supplierMap = suppliers.stream()
+                    .collect(Collectors.toMap(CrmSupplier::getId, CrmSupplier::getName));
+            records.forEach(e -> e.setSupplierName(supplierMap.get(e.getSupplierId())));
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

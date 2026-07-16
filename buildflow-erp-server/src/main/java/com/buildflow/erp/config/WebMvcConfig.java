@@ -44,12 +44,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private SignatureInterceptor signatureInterceptor;
 
-    /** Knife4j 文档排除路径 */
+    /** Knife4j / OpenAPI 3 文档排除路径 */
     private static final String[] EXCLUDE_PATHS = {
             "/doc.html",
             "/webjars/**",
             "/swagger-resources/**",
-            "/v2/api-docs"
+            "/v2/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/favicon.ico"
     };
 
     /**

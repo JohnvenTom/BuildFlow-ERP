@@ -31,6 +31,14 @@ public class WmsInventory {
     /** 仓库ID，关联 wms_warehouse.id */
     private Long warehouseId;
 
+    /** 商品名称（非数据库字段，关联查询 wms_product.name 填充） */
+    @TableField(exist = false)
+    private String productName;
+
+    /** 仓库名称（非数据库字段，关联查询 wms_warehouse.name 填充） */
+    @TableField(exist = false)
+    private String warehouseName;
+
     /** 批次号 */
     private String batchNo;
 

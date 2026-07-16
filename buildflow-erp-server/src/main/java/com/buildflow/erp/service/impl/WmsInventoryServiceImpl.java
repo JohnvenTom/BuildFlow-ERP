@@ -7,11 +7,21 @@ import com.buildflow.erp.common.exception.BusinessException;
 import com.buildflow.erp.common.result.PageResult;
 import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.entity.WmsInventory;
+import com.buildflow.erp.entity.WmsProduct;
+import com.buildflow.erp.entity.WmsWarehouse;
 import com.buildflow.erp.mapper.WmsInventoryMapper;
+import com.buildflow.erp.mapper.WmsProductMapper;
+import com.buildflow.erp.mapper.WmsWarehouseMapper;
 import com.buildflow.erp.service.WmsInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 库存明细服务实现类
@@ -23,6 +33,12 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
 
     @Autowired
     private WmsInventoryMapper wmsInventoryMapper;
+
+    @Autowired
+    private WmsProductMapper wmsProductMapper;
+
+    @Autowired
+    private WmsWarehouseMapper wmsWarehouseMapper;
 
     /**
      * 分页查询库存明细
@@ -44,7 +60,31 @@ public class WmsInventoryServiceImpl implements WmsInventoryService {
                 .like(StringUtils.hasText(batchNo), WmsInventory::getBatchNo, batchNo)
                 .orderByDesc(WmsInventory::getUpdateTime);
         Page<WmsInventory> result = wmsInventoryMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<WmsInventory> records = result.getRecords();
+        // 批量查询商品名称和仓库名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> productIds = records.stream()
+                    .map(WmsInventory::getProductId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            Set<Long> warehouseIds = records.stream()
+                    .map(WmsInventory::getWarehouseId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!productIds.isEmpty()) {
+                List<WmsProduct> products = wmsProductMapper.selectBatchIds(productIds);
+                Map<Long, String> productMap = products.stream()
+                        .collect(Collectors.toMap(WmsProduct::getId, WmsProduct::getName));
+                records.forEach(i -> i.setProductName(productMap.get(i.getProductId())));
+            }
+            if (!warehouseIds.isEmpty()) {
+                List<WmsWarehouse> warehouses = wmsWarehouseMapper.selectBatchIds(warehouseIds);
+                Map<Long, String> warehouseMap = warehouses.stream()
+                        .collect(Collectors.toMap(WmsWarehouse::getId, WmsWarehouse::getName));
+                records.forEach(i -> i.setWarehouseName(warehouseMap.get(i.getWarehouseId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

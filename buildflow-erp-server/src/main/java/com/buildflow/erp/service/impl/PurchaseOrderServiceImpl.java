@@ -9,8 +9,10 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.common.utils.OrderNoGenerator;
 import com.buildflow.erp.entity.PurchaseOrder;
 import com.buildflow.erp.entity.PurchaseOrderItem;
+import com.buildflow.erp.entity.CrmSupplier;
 import com.buildflow.erp.mapper.PurchaseOrderItemMapper;
 import com.buildflow.erp.mapper.PurchaseOrderMapper;
+import com.buildflow.erp.mapper.CrmSupplierMapper;
 import com.buildflow.erp.service.PurchaseOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,10 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 采购订单服务实现类
@@ -34,6 +40,9 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Autowired
     private PurchaseOrderItemMapper purchaseOrderItemMapper;
+
+    @Autowired
+    private CrmSupplierMapper crmSupplierMapper;
 
     /**
      * 分页查询采购订单列表
@@ -55,7 +64,21 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
                 .eq(StringUtils.hasText(status), PurchaseOrder::getStatus, status)
                 .orderByDesc(PurchaseOrder::getCreateTime);
         Page<PurchaseOrder> result = purchaseOrderMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<PurchaseOrder> records = result.getRecords();
+        // 批量查询供应商名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> supplierIds = records.stream()
+                    .map(PurchaseOrder::getSupplierId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!supplierIds.isEmpty()) {
+                List<CrmSupplier> suppliers = crmSupplierMapper.selectBatchIds(supplierIds);
+                Map<Long, String> supplierMap = suppliers.stream()
+                        .collect(Collectors.toMap(CrmSupplier::getId, CrmSupplier::getName));
+                records.forEach(o -> o.setSupplierName(supplierMap.get(o.getSupplierId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

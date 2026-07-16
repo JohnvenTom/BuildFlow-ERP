@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 系统菜单实体
@@ -58,4 +59,8 @@ public class SysMenu {
     /** 更新时间，新增和更新时自动填充 */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+    /** 子菜单列表（非数据库字段，用于构建树形结构） */
+    @TableField(exist = false)
+    private List<SysMenu> children;
 }

@@ -33,8 +33,16 @@ public class SalesOrder {
     /** 客户ID，关联 crm_customer.id */
     private Long customerId;
 
+    /** 客户名称（非数据库字段，关联查询 crm_customer.name 填充） */
+    @TableField(exist = false)
+    private String customerName;
+
     /** 业务员ID，关联 sys_user.id */
     private Long salespersonId;
+
+    /** 业务员名称（非数据库字段，关联查询 sys_user.realName 填充） */
+    @TableField(exist = false)
+    private String salespersonName;
 
     /** 销售总金额 */
     private BigDecimal totalAmount;

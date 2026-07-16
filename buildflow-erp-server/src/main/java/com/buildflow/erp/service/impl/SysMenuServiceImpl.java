@@ -90,7 +90,7 @@ public class SysMenuServiceImpl implements SysMenuService {
 
     /**
      * 构建菜单树形结构的内部辅助方法
-     * 递归将扁平菜单列表组装为树形结构
+     * 递归将扁平菜单列表组装为树形结构，设置每个菜单的children属性
      *
      * @param allMenus 所有菜单的扁平列表
      * @param parentId 当前层级的父菜单ID
@@ -100,8 +100,9 @@ public class SysMenuServiceImpl implements SysMenuService {
         List<SysMenu> tree = new ArrayList<>();
         for (SysMenu menu : allMenus) {
             if (parentId.equals(menu.getParentId())) {
-                // 递归查找子菜单（通过children属性承载，需实体类添加该字段或使用Map）
-                // 此处简化处理：仅返回列表，前端可根据parentId自行构建树
+                // 递归查找子菜单并设置到children属性
+                List<SysMenu> children = buildTree(allMenus, menu.getId());
+                menu.setChildren(children.isEmpty() ? null : children);
                 tree.add(menu);
             }
         }

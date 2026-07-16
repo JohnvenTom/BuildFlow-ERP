@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sales-order-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
@@ -356,7 +356,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -378,7 +378,7 @@ async function loadCustomerOptions() {
  */
 async function loadSalespersonOptions() {
   const res = await userPage({ pageNum: 1, pageSize: 999 })
-  salespersonOptions.value = res.data?.list || []
+  salespersonOptions.value = res.data?.rows || []
 }
 
 /**
@@ -526,7 +526,23 @@ async function handleSubmit() {
     ElMessage.warning('请选择明细中的商品')
     return
   }
-  await salesOrderAdd({ ...form })
+  // 转换为后端DTO格式 {order: {...}, items: [...]}
+  const dto = {
+    order: {
+      customerId: form.customerId,
+      salespersonId: form.salespersonId,
+      commissionRate: form.commissionRate,
+      remark: form.remark
+    },
+    items: form.details.map(d => ({
+      productId: d.productId,
+      colorCode: d.colorCode,
+      unitPrice: d.unitPrice,
+      quantity: d.quantity,
+      amount: d.amount
+    }))
+  }
+  await salesOrderAdd(dto)
   ElMessage.success('新增成功')
   dialogVisible.value = false
   loadData()

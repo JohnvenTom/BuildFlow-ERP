@@ -9,8 +9,12 @@ import com.buildflow.erp.common.result.R;
 import com.buildflow.erp.common.utils.OrderNoGenerator;
 import com.buildflow.erp.entity.SalesOrder;
 import com.buildflow.erp.entity.SalesOrderItem;
+import com.buildflow.erp.entity.CrmCustomer;
+import com.buildflow.erp.entity.SysUser;
 import com.buildflow.erp.mapper.SalesOrderItemMapper;
 import com.buildflow.erp.mapper.SalesOrderMapper;
+import com.buildflow.erp.mapper.CrmCustomerMapper;
+import com.buildflow.erp.mapper.SysUserMapper;
 import com.buildflow.erp.service.SalesOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,10 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 销售订单服务实现类
@@ -34,6 +42,12 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Autowired
     private SalesOrderItemMapper salesOrderItemMapper;
+
+    @Autowired
+    private CrmCustomerMapper crmCustomerMapper;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     /**
      * 分页查询销售订单列表
@@ -57,7 +71,31 @@ public class SalesOrderServiceImpl implements SalesOrderService {
                 .eq(StringUtils.hasText(status), SalesOrder::getStatus, status)
                 .orderByDesc(SalesOrder::getCreateTime);
         Page<SalesOrder> result = salesOrderMapper.selectPage(page, wrapper);
-        return R.ok(new PageResult<>(result.getTotal(), result.getRecords()));
+        List<SalesOrder> records = result.getRecords();
+        // 批量查询客户名称和业务员名称并填充到结果中
+        if (!records.isEmpty()) {
+            Set<Long> customerIds = records.stream()
+                    .map(SalesOrder::getCustomerId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            Set<Long> salespersonIds = records.stream()
+                    .map(SalesOrder::getSalespersonId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!customerIds.isEmpty()) {
+                List<CrmCustomer> customers = crmCustomerMapper.selectBatchIds(customerIds);
+                Map<Long, String> customerMap = customers.stream()
+                        .collect(Collectors.toMap(CrmCustomer::getId, CrmCustomer::getName));
+                records.forEach(o -> o.setCustomerName(customerMap.get(o.getCustomerId())));
+            }
+            if (!salespersonIds.isEmpty()) {
+                List<SysUser> users = sysUserMapper.selectBatchIds(salespersonIds);
+                Map<Long, String> userMap = users.stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName));
+                records.forEach(o -> o.setSalespersonName(userMap.get(o.getSalespersonId())));
+            }
+        }
+        return R.ok(new PageResult<>(result.getTotal(), records));
     }
 
     /**

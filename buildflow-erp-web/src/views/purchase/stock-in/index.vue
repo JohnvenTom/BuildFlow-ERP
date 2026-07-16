@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="stock-in-container">
     <!-- 搜索区 -->
     <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="入库单号">
-          <el-input v-model="searchForm.orderNo" placeholder="请输入入库单号" clearable />
+          <el-input v-model="searchForm.stockInNo" placeholder="请输入入库单号" clearable />
         </el-form-item>
         <el-form-item label="供应商">
           <el-select v-model="searchForm.supplierId" placeholder="请选择供应商" clearable>
@@ -40,7 +40,7 @@
       </template>
 
       <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="orderNo" label="入库单号" width="160" show-overflow-tooltip />
+        <el-table-column prop="stockInNo" label="入库单号" width="160" show-overflow-tooltip />
         <el-table-column prop="supplierName" label="供应商" min-width="140" show-overflow-tooltip />
         <el-table-column prop="warehouseName" label="入库仓库" min-width="140" show-overflow-tooltip />
         <el-table-column prop="totalAmount" label="总金额" width="130" show-overflow-tooltip>
@@ -179,7 +179,7 @@ import { warehouseList, productList } from '@/api/warehouse'
 
 /** 搜索表单数据 */
 const searchForm = reactive({
-  orderNo: '',
+  stockInNo: '',
   supplierId: undefined as number | undefined,
   status: ''
 })
@@ -269,7 +269,7 @@ async function loadData() {
       pageSize: pagination.pageSize,
       ...searchForm
     })
-    tableData.value = res.data?.list || []
+    tableData.value = res.data?.rows || []
     pagination.total = res.data?.total || 0
   } finally {
     loading.value = false
@@ -309,7 +309,7 @@ async function loadProductOptions() {
  */
 async function loadPurchaseOrderOptions() {
   const res = await purchaseOrderPage({ pageNum: 1, pageSize: 999, status: '已审核' })
-  purchaseOrderOptions.value = res.data?.list || []
+  purchaseOrderOptions.value = res.data?.rows || []
 }
 
 /**
@@ -326,7 +326,7 @@ function handleSearch() {
  * @description 清空搜索表单并重新加载数据
  */
 function handleReset() {
-  searchForm.orderNo = ''
+  searchForm.stockInNo = ''
   searchForm.supplierId = undefined
   searchForm.status = ''
   handleSearch()
@@ -410,7 +410,7 @@ async function handleAudit(row: any) {
  * @throws 用户取消作废时不执行操作
  */
 async function handleVoid(row: any) {
-  await ElMessageBox.confirm(`确定要作废入库单「${row.orderNo}」吗？`, '作废确认', {
+  await ElMessageBox.confirm(`确定要作废入库单「${row.stockInNo}」吗？`, '作废确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -436,7 +436,23 @@ async function handleSubmit() {
     ElMessage.warning('请选择明细中的商品')
     return
   }
-  await stockInAdd({ ...form })
+  // 按后端 PurchaseStockInDTO 结构组装：主表 stockIn + 明细 items
+  await stockInAdd({
+    stockIn: {
+      supplierId: form.supplierId,
+      warehouseId: form.warehouseId,
+      purchaseOrderId: form.purchaseOrderId,
+      remark: form.remark
+    },
+    items: form.details.map((d) => ({
+      productId: d.productId,
+      colorCode: d.colorCode,
+      batchNo: d.batchNo,
+      unitPrice: d.unitPrice,
+      quantity: d.quantity,
+      amount: d.amount
+    }))
+  })
   ElMessage.success('新增成功')
   dialogVisible.value = false
   loadData()

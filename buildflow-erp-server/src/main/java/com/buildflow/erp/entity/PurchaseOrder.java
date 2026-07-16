@@ -32,6 +32,10 @@ public class PurchaseOrder {
     /** 供应商ID，关联 crm_supplier.id */
     private Long supplierId;
 
+    /** 供应商名称（非数据库字段，关联查询 crm_supplier.name 填充） */
+    @TableField(exist = false)
+    private String supplierName;
+
     /** 采购总金额 */
     private BigDecimal totalAmount;
 

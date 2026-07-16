@@ -37,6 +37,10 @@ public class WmsWarehouse {
     /** 负责人ID，关联 sys_user.id */
     private Long managerId;
 
+    /** 管理员名称（非数据库字段，关联查询 sys_user.realName 填充） */
+    @TableField(exist = false)
+    private String managerName;
+
     /** 逻辑删除标识（0-未删除 1-已删除） */
     @TableLogic
     private Integer isDeleted;
